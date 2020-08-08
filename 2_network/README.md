@@ -123,26 +123,7 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 
 ### 2-3-2. セットアップ
 #### terraform init
-
-`2_network/terraform`配下で`terraform init`を実行してこのディレクトリにあるmain.tf上の設定を読み込む
-
-```
-$  terraform init
-
-Initializing the backend...
-
-Initializing provider plugins...
-
-Terraform has been successfully initialized!
-
-You may now begin working with Terraform. Try running "terraform plan" to see
-any changes that are required for your infrastructure. All Terraform commands
-should now work.
-
-If you ever set or change modules or backend configuration for Terraform,
-rerun this command to reinitialize your working directory. If you forget, other
-commands will detect it and remind you to do so if necessary.
-```
+`./terraform`配下で `./bin/setup.sh`を実行する
 
 #### EC2のキーペア作成
 [Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
@@ -153,7 +134,8 @@ commands will detect it and remind you to do so if necessary.
 起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/main.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
 
 ### 2-3-2. 実行
-今回は以下の構成のリソースをTerraformを使って構築する
+今回は以下の構成のリソースをTerraformを使って構築する（操作は全て`./terraform`配下で行う）
+
 ![region](./img/network.png)
 
 `main.tf`ファイルに有る記述を一つずつplan/applyしていく
