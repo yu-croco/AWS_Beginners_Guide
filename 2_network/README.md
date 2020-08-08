@@ -122,8 +122,7 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 
 
 ### 2-3-2. セットアップ
-今回は以下の構成のリソースをTerraformを使って構築する
-![region](./img/network.png)
+#### terraform init
 
 `2_network/terraform`配下で`terraform init`を実行してこのディレクトリにあるmain.tf上の設定を読み込む
 
@@ -145,7 +144,18 @@ rerun this command to reinitialize your working directory. If you forget, other
 commands will detect it and remind you to do so if necessary.
 ```
 
+#### EC2のキーペア作成
+[Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
+
+作成したキーをローカルに設定した上で、`./terraform/main.tf`の`aws_instance.infra-study`の`key_name`にその名前を設定する。
+
+#### インバウンドアクセス制限
+起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/main.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
+
 ### 2-3-2. 実行
+今回は以下の構成のリソースをTerraformを使って構築する
+![region](./img/network.png)
+
 `main.tf`ファイルに有る記述を一つずつplan/applyしていく
 
 ```
@@ -155,5 +165,4 @@ $ terraform apply -target=aws_vpc.infra-study-vpc
 
 apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する
 
-
-sshでEC2にログイン出来ることを確認する
+sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）
