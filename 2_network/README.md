@@ -133,7 +133,7 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 #### インバウンドアクセス制限
 起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/main.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
 
-### 2-3-2. 実行
+### 2-3-3. リソースを構築
 今回は以下の構成のリソースをTerraformを使って構築する（操作は全て`./terraform`配下で行う）
 
 ![region](./img/network_img.png)
@@ -158,10 +158,10 @@ Host infra-study
   HostName xx.xxx.xxx.xx
 ```
 
-### 2-3-3. EC2でwebサーバーを起動してみる
-EC2でwebサーバーを起動してみる。今回はDockerとnode.jsを使う。
+### 2-3-4. EC2上にwebサーバーを起動
+これだけでは面白くないので、EC2でwebサーバーを起動してみる。今回はDockerとnode.jsを使う。
 
-terraformでEC2インスタンスを構築した際にDocker用のセットアップも一緒に実行されるように対応済みであるため、あとは`src`配下のリソースをEC2に転送する。
+terraformでEC2インスタンスを構築した際にDocker用のセットアップも一緒に実行されるように対応済みであるため（ユーザーデータにスクリプトを設定した）、あとは`src`配下のリソースをEC2に転送する。
 
 git環境を構築するのは手間なので今回はscpコマンドを使用する。`2_network`配下で以下のコマンドを使ってEC2にリソースを転送する
 
@@ -210,3 +210,5 @@ $ bin/docker_run.sh # webサーバー起動
 webブラウザから`http://${IP}/:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する
 ![web server](web_server.png)
 
+### 2-3-5. 後片付け
+terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
