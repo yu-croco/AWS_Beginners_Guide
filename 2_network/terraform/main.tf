@@ -73,9 +73,9 @@ resource "aws_security_group" "infra-study-sg" {
   ingress {
     // set your IP
     cidr_blocks      = [""]
-    description      = "your home"
+    description      = "your IP address"
     from_port        = 22
-    to_port          = 22
+    to_port          = 80
     ipv6_cidr_blocks = []
     prefix_list_ids  = []
     protocol         = "tcp"
@@ -140,6 +140,7 @@ resource "aws_instance" "infra-study" {
   iam_instance_profile        = "infra-study"
   count                       = 1
   associate_public_ip_address = true
+  user_data = file("../src/bin/user_data.sh")
   tags = {
     Name = "infra-study"
   }

@@ -147,4 +147,66 @@ $ terraform apply -target=aws_vpc.infra-study-vpc
 
 apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する
 
-sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）
+sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）。ssh configの設定はこちらを参照すると良いかも[~/.ssh/configについて](https://qiita.com/passol78/items/2ad123e39efeb1a5286b)
+
+雰囲気としては以下の感じ
+
+```
+Host infra-study
+  User ec2-user
+  IdentityFile ~/.ssh/xxxxxx.pem
+  HostName xx.xxx.xxx.xx
+```
+
+### 2-3-3. EC2でwebサーバーを起動してみる
+EC2でwebサーバーを起動してみる。今回はDockerとnode.jsを使う。
+
+terraformでEC2インスタンスを構築した際にDocker用のセットアップも一緒に実行されるように対応済みであるため、あとは`src`配下のリソースをEC2に転送する。
+
+git環境を構築するのは手間なので今回はscpコマンドを使用する。`2_network`配下で以下のコマンドを使ってEC2にリソースを転送する
+
+```
+$ scp -r ./src infra-study:/home/ec2-user
+```
+
+EC2インスタンスにsshログインしてDockerイメージのビルドと実行を行ってみる
+
+```
+$ ssh infra-study
+$ ls
+src
+$ cd src/
+$ bin/build_image.sh # docker imageをビルドする
+Sending build context to Docker daemon  9.728kB
+Step 1/8 : FROM node:12
+ ---> cfcf3e70099d
+Step 2/8 : ENV APP_ROOT=/usr/src/app
+ ---> Using cache
+ ---> f6c6360837fc
+Step 3/8 : WORKDIR ${APP_ROOT}
+ ---> Using cache
+ ---> 11c0411442f7
+Step 4/8 : COPY package*.json ./
+ ---> Using cache
+ ---> 5b63f0e83982
+Step 5/8 : RUN npm install
+ ---> Using cache
+ ---> fad6aa7b1693
+Step 6/8 : COPY . ${APP_ROOT}
+ ---> Using cache
+ ---> e74f67175e70
+Step 7/8 : EXPOSE 80
+ ---> Using cache
+ ---> fda9a5e17006
+Step 8/8 : CMD [ "node", "index.js" ]
+ ---> Using cache
+ ---> 92b2312480b4
+Successfully built 92b2312480b4
+Successfully tagged sample-node-app:latest
+$ bin/docker_run.sh # webサーバー起動
+82ee4aa79014140c7fddafc28760bd74c32a9f3c57ca988287b41bce044cb3dd7
+```
+
+webブラウザから`http://${IP}/:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する
+![web server](web_server.png)
+
