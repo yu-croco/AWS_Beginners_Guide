@@ -140,7 +140,7 @@ resource "aws_instance" "infra-study" {
   iam_instance_profile        = "infra-study"
   count                       = 1
   associate_public_ip_address = true
-  user_data = file("../src/bin/user_data.sh")
+  user_data                   = file("../src/bin/user_data.sh")
   tags = {
     Name = "infra-study"
   }
