@@ -10,5 +10,4 @@ COPY package*.json ./
 RUN npm install
 COPY . ${APP_ROOT}
 
-EXPOSE 80
 CMD [ "node", "index.js" ]
