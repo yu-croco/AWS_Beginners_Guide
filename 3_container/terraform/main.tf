@@ -259,8 +259,23 @@ resource "aws_cloudwatch_log_group" "infra-study" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "infra-study-2" {
+  name = "/ecs/infra-study-2"
+  tags = {
+    Name = "infra-study"
+  }
+}
+
 resource "aws_ecr_repository" "infra-study" {
   name                 = "infra-study"
+  image_tag_mutability = "MUTABLE"
+  tags = {
+    Name = "infra-study"
+  }
+}
+
+resource "aws_ecr_repository" "infra-study-2" {
+  name                 = "infra-study-2"
   image_tag_mutability = "MUTABLE"
   tags = {
     Name = "infra-study"
@@ -312,22 +327,6 @@ resource "aws_ecs_service" "infra-study" {
   }
   deployment_controller {
     type = "ECS"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "infra-study-2" {
-  name = "/ecs/infra-study-2"
-  tags = {
-    Name = "infra-study"
-  }
-}
-
-# for golang application
-resource "aws_ecr_repository" "infra-study-2" {
-  name                 = "infra-study-2"
-  image_tag_mutability = "MUTABLE"
-  tags = {
-    Name = "infra-study"
   }
 }
 
