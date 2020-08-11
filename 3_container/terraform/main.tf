@@ -107,9 +107,9 @@ resource "aws_security_group" "infra-study-sg" {
     self             = false
   }
   ingress {
-    cidr_blocks      = [
-        "0.0.0.0/0"
-      ]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
     description      = ""
     from_port        = 443
     ipv6_cidr_blocks = []
@@ -120,9 +120,9 @@ resource "aws_security_group" "infra-study-sg" {
     to_port          = 443
   }
   ingress {
-    cidr_blocks      = [
-        "0.0.0.0/0"
-      ]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
     description      = ""
     from_port        = 8080
     ipv6_cidr_blocks = []
@@ -139,7 +139,7 @@ resource "aws_iam_role" "infra-study" {
   assume_role_policy    = file("./config/iam/infra-study.json")
   description           = "infra-study"
   force_detach_policies = false
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -180,7 +180,7 @@ resource "aws_alb" "infra-study" {
     prefix  = ""
     enabled = false
   }
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -202,7 +202,7 @@ resource "aws_alb_target_group" "infra-study" {
     timeout             = 5
     unhealthy_threshold = 2
   }
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -235,7 +235,7 @@ resource "aws_alb_target_group" "infra-study-2" {
     timeout             = 5
     unhealthy_threshold = 2
   }
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -273,7 +273,7 @@ resource "aws_ecs_cluster" "infra-study" {
     name  = "containerInsights"
     value = "disabled"
   }
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -287,7 +287,7 @@ resource "aws_ecs_task_definition" "infra-study" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.infra-study.arn
   execution_role_arn       = aws_iam_role.infra-study.arn
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
@@ -340,7 +340,7 @@ resource "aws_ecs_task_definition" "infra-study-2" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.infra-study.arn
   execution_role_arn       = aws_iam_role.infra-study.arn
-  tags                  = {
+  tags = {
     Name = "infra-study"
   }
 }
