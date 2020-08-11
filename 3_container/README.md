@@ -54,16 +54,21 @@ DockerコンテナとホストOSのカーネルとやり取りするため、従
 - [Docker導入のための、コンテナの利点を解説した説得資料](https://qiita.com/niisan-tokyo/items/88a53a1b4aa7ad60723e)
 - [@IT 第1回　Dockerとは](http://www.atmarkit.co.jp/ait/articles/1701/30/news037.html)
 
-## 3-3. ハンズオン
-### 3-3-1. 構成図
-今回のハンズオンでは以下のような構成のインフラを構築する。ELBに対してアクセスが来た際、portが80番であればあればnode.jsのアプリケーションにトラフィックを流し、Portが8080番であればGolangのアプリケーションにトラフィックを流すようにする。
+## 3-3. ECS
+WIP
+
+## 3-4. ハンズオン
+### 3-4-1. 構成図
+今回のハンズオンではECS on Fargateを使用して以下のような構成のインフラを構築する。
+
+ELBにアクセスが来た際、Portが80番であればあればnode.jsのアプリケーションにトラフィックを流し、Portが8080番であればGolangのアプリケーションにトラフィックを流すようにする。
 
 ![network](./img/network.png)
 
-### 3-3-2. セットアップ
+### 3-4-2. セットアップ
 `./terraform`配下で `./bin/setup.sh`を実行する
 
-### 3-3-3. リソースを構築
+### 3-4-3. リソースを構築
 `terraform/`配下でリソース毎にapplyを実行していく。ひとまず294行目辺りまで実行していく。
 
 ECRに`infra-study`と`infra-study-2`という2つのレポジトリが構築されるので、
@@ -89,9 +94,9 @@ DNS nameでPort80番にアクセスして`Hello World from Golang`と返され�
 
 例：infra-study-0000000.ap-northeast-1.elb.amazonaws.com:8080
 
-### 3-3-4. 後片付け
+### 3-4-4. 後片付け
 terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
 
-## 3-4. まとめ
+## 3-5. まとめ
 - Dockerコンテナ技術の簡単な枠組みとメリットを学んだ
 - ECS on Fargateを使って2つのアプリケーションを構築した

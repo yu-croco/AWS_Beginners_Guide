@@ -1,4 +1,4 @@
-# AWS_Begginers_Guide
+# AWS Begginer's Guide
 
 ## 概要
 AWSにこれから入門される方のためのハンズオン用レポジトリ。
