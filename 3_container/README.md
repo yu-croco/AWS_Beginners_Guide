@@ -3,10 +3,18 @@
 
 この章ではDockerコンテナ（およびECS）に関して紹介し、ECS(Fargate)を使ってハンズオンを行う
 
-## 3-1. コンテナ概略(WIP)
+## 3-1. Docker概要
 Dockerとは、コンテナ型仮想環境を作成、配布、実行するためのプラットフォーム。Docker社が開発を始め、2013年にオープンソースのプロジェクトとして公開されている。
 
-[公式](https://www.docker.com/)
+[Docker公式](https://www.docker.com/)
+
+LinuxカーネルとcgroupやNamespaceなどのカーネル機能を使用してコンテナをそれぞれ独立したプロセスとして扱える。これによりそれぞれのコンテナに独立したアプリケーションを展開することができる。
+
+DockerコンテナとホストOSのカーネルとやり取りするため、従来の仮想マシンのようにゲストOSなどが不要なため軽量に独立した環境を用意することが出来る。
+
+### 参考
+- [Docker とは](https://www.redhat.com/ja/topics/containers/what-is-docker)
+- [コンテナってなんだろう― 「コンテナ」の概要を知る](https://thinkit.co.jp/article/17301)
 
 ## 3-2. Dockerコンテナを使うことのメリット
 ### 3-2-1. 軽量なホストマシン上で隔離された環境を利用できる
@@ -45,8 +53,6 @@ Dockerとは、コンテナ型仮想環境を作成、配布、実行するた�
 - [さくらのナレッジ Docker入門（第一回）～Dockerとは何か、何が良いのか～](https://knowledge.sakura.ad.jp/13265/)
 - [Docker導入のための、コンテナの利点を解説した説得資料](https://qiita.com/niisan-tokyo/items/88a53a1b4aa7ad60723e)
 - [@IT 第1回　Dockerとは](http://www.atmarkit.co.jp/ait/articles/1701/30/news037.html)
-- [Docker とは](https://www.redhat.com/ja/topics/containers/what-is-docker)
-- [コンテナってなんだろう― 「コンテナ」の概要を知る](https://thinkit.co.jp/article/17301)
 
 ## 3-3. ハンズオン
 ### 3-3-1. 構成図
