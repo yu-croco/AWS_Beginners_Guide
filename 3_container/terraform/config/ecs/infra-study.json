@@ -3,7 +3,7 @@
     "cpu": 1024,
     "environment": [],
     "essential": true,
-    "image": "",
+    "image": "set your ECR endpoint",
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
