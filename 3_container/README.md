@@ -1,7 +1,9 @@
 # 3. Container
-前章ではEC2周りを見てきた。EC2を使って愚直にアプリケーションを運用しようと思うと色々と面倒事がある。Dockerコンテナ（およびECS）はそんな面倒事を色々と解決してくれる。
+前章ではEC2周りを見てきた。EC2を使ってその上に愚直にアプリケーションを運用しようと思うと色々と面倒事がある。
 
-この章ではDockerコンテナ（およびECS）に関して紹介し、ECS(Fargate)を使ってハンズオンを行う
+Dockerコンテナ（およびECS）はそんな面倒事を色々と解決してくれる（ケースにもよるが、一般的なwebアプリケーションの大半のケースでは使える）。
+
+この章ではDockerコンテナ（およびECS）に関して紹介し、ECS(Fargate)を使ってハンズオンを行う。
 
 ## 3-1. Docker概要
 Dockerとは、コンテナ型仮想環境を作成、配布、実行するためのプラットフォーム。Docker社が開発を始め、2013年にオープンソースのプロジェクトとして公開されている。
@@ -55,11 +57,52 @@ DockerコンテナとホストOSのカーネルとやり取りするため、従
 - [@IT 第1回　Dockerとは](http://www.atmarkit.co.jp/ait/articles/1701/30/news037.html)
 
 ## 3-3. ECS
-WIP
+ECSはDockerコンテナの管理を簡単に行えるコンテナ管理サービスである。利用者はデプロイしたいDockerイメージをサービスまたはタスクとして起動して使用する。
+ECSにはECSタイプとEC2タイプの2つの起動タイプがある。
+
+ECSタイプではDockerコンテナを配備する対象のEC2インスタンスはAWS側でいい感じに用意してくれる。
+Dockerコンテナが動いているEC2にはsshログインなどできない。
+
+EC2タイプではDockerコンテナを配備する対象のEC2インスタンスは自分で管理する。Fargateでは手の届かない細かなカスタマイズがしたい場合にはこちらを選ぶ。
+Dockerコンテナが動いているEC2にはsshログインできる。
+
+### 3-3-1. 全体構成
+ECSは起動タイプによって構成が異なる
+
+#### EC2タイプ
+![ec2 type](./img/ec2.png)
+
+#### Fargateタイプ
+![fargate type](./img/fargate.png)
+
+*画像はともに[https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/launch_types.html](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/launch_types.html)から拝借
+
+### 3-3-2. 用語
+#### クラスター
+ECSはクラスターというグループによりリソースを管理している。クラスター単位で起動タイプ（FargateまたはEC2）を選ぶ。
+
+#### タスク定義
+ECSでアプリケーションを実行するためにはタスク定義を作成する必要がある。タスク定義をアプリケーションを構成するコンテナの情報（どのDockerイメージを使い、コンテナのスペックやPortなどをどうするか）を定義する。
+
+#### タスクとスケジューリング
+タスク定義を元に、クラスター内でタスクを実行する。
+
+中長期実行し続けるアプリケーションサービスを起動する場合には`サービススケジューラ`を定義して実行する。
+サービススケジューラにより、指定したスケジュール戦略が順守され、タスクが失敗したときにタスクが再スケジュールされる。
+
+サービススケジューラではアプリケーションの配置先のネットワーク設定やELBとの連携なども行える。
+
+### 参考
+- [Amazon Elastic Container Service](https://aws.amazon.com/jp/ecs/)
+- [Amazon Elastic Container Service の特徴](https://aws.amazon.com/jp/ecs/features/)
+- [Amazon Elastic Container Service とは](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/Welcome.html)
+- [Amazon ECS 起動タイプ](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/launch_types.html)
+- [Amazon ECS タスクのスケジューリング](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/scheduling_tasks.html)
+- [AWSでDockerを扱うためのベストプラクティス](https://www.slideshare.net/AmazonWebServicesJapan/awsdocker)
 
 ## 3-4. ハンズオン
 ### 3-4-1. 構成図
-今回のハンズオンではECS on Fargateを使用して以下のような構成のインフラを構築する。
+今回のハンズオンではECS（起動タイプはFargate）を使用して以下のような構成のインフラを構築する。
 
 ELBにアクセスが来た際、Portが80番であればあればnode.jsのアプリケーションにトラフィックを流し、Portが8080番であればGolangのアプリケーションにトラフィックを流すようにする。
 
