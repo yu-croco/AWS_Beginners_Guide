@@ -2,7 +2,16 @@
 EC2を構築するために必要なネットワーク周りを紹介しつつ、EC2にインスタンスを構築するハンズオンを行う。
 
 ## 2-1. キーワード
+ゼロからEC2を構築するまでに必要そうなキーワードを軽く紹介する。
+基本的にはAWS公式で丁寧に解説されているので、気になる方はそちらも参考にすることをお勧めする。
+
+アベイラビリティーゾーンまでの粒度は以下のようなイメージ
 ![region](./img/region.png)
+
+*出所:[VPC とサブネット](https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/VPC_Subnets.html)
+
+ルートテーブルまでの粒度は以下のイメージ
+![detail](./img/region.png)
 
 *出所:[VPC とサブネット](https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/VPC_Subnets.html)
 
@@ -37,11 +46,11 @@ VPCのIPアドレスの範囲のこと。VPCは大きな土地なのだけれど
 
 例えばインターネットと接続するためのリソース用に`public subnet`、インターネットと接続したくないリソースを配置するために `private subnet`というような使い方をする。
 
-
 ### ルートテーブル
 ネットワークトラフィックの経路を判断する際に使用される、`ルート`と呼ばれる一連のルール。アクセスがどこから来てどこへ流すのかを定義する。
 
-これがないと、例えばインターネットから来たトラフィックをどこに流せば良いのか分からない。
+これがないと、インターネットから来たトラフィックをどこに流せば良いのか分からない。
+また逆に、VPC内部に存在するアプリケーションがレスポンスする際にも、このルートを辿ってインターネットにまで到達する必要がある。
 
 ### インターネットゲートウェイ
 VPC内のリソースとインターネット間の通信を可能にするためにVPCにアタッチするゲートウェイ。
@@ -51,6 +60,8 @@ VPC内のリソースとインターネット間の通信を可能にするた�
 ### VPC エンドポイント
 PrivateLinkを使用してサポートされているAWSサービスやVPCエンドポイントサービスにVPCをプライベートに接続できる。
 インターネットゲートウェイ、NAT デバイス、VPN 接続、または AWS Direct Connect 接続は必要ない。
+
+S3などのVPCの概念を持たないAWSサービスをVPC内部から使用したい場合などに使用する。
 
 ### IAM
 #### IAM Role
@@ -72,12 +83,15 @@ Json形式で記述でき、Action(どのサー ビスの) 、Resource(どうい
 DNS
 
 ### ELB
-ロードバランサー
-
+いわゆるロードバランサーのこと。
 アプリケーションへのトラフィックを複数のターゲット (Amazon EC2 インスタンス、コンテナ、IP アドレス、Lambda 関数など) に自動的に分散してくれる。
 
 ### EC2
-Elastic Compute Cloudの略語。簡単に言うとアプリケーションを構築するためのサーバーを提供してくれる。
+Elastic Compute Cloudの略で、一般的にEC2と呼ばれる。
+
+簡単に言うとアプリケーションを構築するための仮想環境を提供してくれる。
+
+EC2に展開した仮想環境のことをインスタンスと呼び、我々インフラエンジニアはこのインスタンス上にアプリケーションを構築する。
 
 ### 参考
 - [リージョン、アベイラビリティーゾーン、および ローカルゾーン](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/using-regions-availability-zones.html)
@@ -91,6 +105,7 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 - Multi AZ運用
   - 冗長化/可用性/スケーラビリティ
 - セキュリティ対策を適応する
+  - [AWS セキュリティのベストプラクティス](https://www.wafcharm.com/blog/aws-security-best-practice/)を一読することをお勧めする
 - システムの境界をデザインする
   - 将来のことも見据える
 
@@ -98,6 +113,8 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 - [VPC のセキュリティのベストプラクティス](https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/vpc-security-best-practices.html)
 
 ## 2-3. ハンズオン
+ここからはTerraformを使ってゼロからEC2を構築していく。
+
 ### 2-3-1. Terraformの基本
 - Terraformは拡張子が`tf`
   - 基本的には `xxx.tf` ファイルに定義を追加/編集する
@@ -106,6 +123,7 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
   - `apply`はTerraformで定義したリソースをクラウド環境に適応する
 - クラウド上のリソースを削除したい場合には `destroy`を使う
 - できるだけ安全に進めるのが良さげなので、`-target`オプションを使って実行したい対象のリソースを絞るのがおすすめ
+  - 決してベストプラクティスではないので、その辺りは調べてみてください
 - plan
   - `terraform plan -target=${resource}` で対象のリソースの実行計画を見て差分が意図通りか確認する
     - 例：`terraform plan -target=aws_vpc.infra-study-vpc`
@@ -120,34 +138,38 @@ Elastic Compute Cloudの略語。簡単に言うとアプリケーションを�
 - `xxx.tfstate` ファイルはterraformコマンドを通じてのみ変更を反映するもの（マイグレーションのスキーマみたいなやつ）
   - 絶対に手動で変更しないこと！
 
-
 ### 2-3-2. セットアップ
 #### terraform init
 `./terraform`配下で `./bin/setup.sh`を実行する
 
 #### EC2のキーペア作成
-[Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
+EC2にsshログインする場合には予め秘密鍵を作っておく必要があるので、[Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
 
 作成したキーをローカルに設定した上で、`./terraform/main.tf`の`aws_instance.infra-study`の`key_name`にその名前を設定する。
+これで、Terraformを使って起動したEC2インスタンスとキーペアが紐付けられる。
 
 #### インバウンドアクセス制限
 起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/main.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
 
+デフォルトでは外部からはアクセスできない仕様であるため、かならず何らかのIPを指定する必要がある。
+
 ### 2-3-3. リソースを構築
-今回は以下の構成のリソースをTerraformを使って構築する（操作は全て`./terraform`配下で行う）
+今回は以下の構成のリソースをTerraformを使って構築する（操作は全て`./terraform`配下で行う）。
 
 ![region](./img/network_img.png)
 
-`main.tf`ファイルに有る記述を一つずつplan/applyしていく
+`main.tf`ファイルに有る記述を一つずつplan/applyしていく。
+この際にログに変更差分などが表示されるので見ておくと良い。
 
 ```
 $ terraform plan -target=aws_vpc.infra-study-vpc
 $ terraform apply -target=aws_vpc.infra-study-vpc
 ```
 
-apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する
+apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する。
 
-sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）。ssh configの設定はこちらを参照すると良いかも[~/.ssh/configについて](https://qiita.com/passol78/items/2ad123e39efeb1a5286b)
+sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）。
+ssh configの設定はこちらを参照すると良いかもしれない[~/.ssh/configについて](https://qiita.com/passol78/items/2ad123e39efeb1a5286b)。
 
 雰囲気としては以下の感じ
 
@@ -158,25 +180,38 @@ Host infra-study
   HostName xx.xxx.xxx.xx
 ```
 
+ターミナルから以下のようにコマンドを打ってEC2インスタンスにログイン出来ることを確認する。
+
+```
+$ ssh infra-study
+```
+
 ### 2-3-4. EC2上にwebサーバーを起動
-これだけでは面白くないので、EC2でwebサーバーを起動してみる。今回はDockerとnode.jsを使う。
+sshログインだけでは面白くないので、起動したEC2インスタンスでwebサーバーを起動してみる。
+
+今回はDockerとnode.jsを使う。
+
+Dockerを使わずに必要なリソースを直接EC2インスタンスにインストールしてもよいが、大変なので今回はDockerを使う。
+また今回はTerraformでEC2を起動した際にDocker本体をインストールする処理を施してある。
 
 terraformでEC2インスタンスを構築した際にDocker用のセットアップも一緒に実行されるように対応済みであるため（ユーザーデータにスクリプトを設定した）、あとは`src`配下のリソースをEC2に転送する。
 
-git環境を構築するのは手間なので今回はscpコマンドを使用する。`2_network`配下で以下のコマンドを使ってEC2にリソースを転送する
+git環境を構築するのは手間なので今回はscpコマンドを使用する。`2_network`配下で以下のコマンドを使ってEC2にリソースを転送する。
 
 ```
 $ scp -r ./src infra-study:/home/ec2-user
 ```
 
-EC2インスタンスにsshログインしてDockerイメージのビルドと実行を行ってみる
+EC2インスタンスにsshログインすると、直下に`src`ディレクトリが出来上がっているはずである。
+
+`src`配下で`bin/build_image.sh`を実行してDockerイメージのビルドと実行を行ってみる。
 
 ```
 $ ssh infra-study
 $ ls
 src
 $ cd src/
-$ bin/build_image.sh # docker imageをビルドする
+$ bin/build_image.sh
 Sending build context to Docker daemon  9.728kB
 Step 1/8 : FROM node:12
  ---> cfcf3e70099d
@@ -203,19 +238,29 @@ Step 8/8 : CMD [ "node", "index.js" ]
  ---> 92b2312480b4
 Successfully built 92b2312480b4
 Successfully tagged sample-node-app:latest
-$ bin/docker_run.sh # webサーバー起動
+```
+
+ビルドできたら`bin/docker_run.sh`を実行してDockerコンテナを起動する
+
+```
+$ bin/docker_run.sh
 82ee4aa79014140c7fddafc28760bd74c32a9f3c57ca988287b41bce044cb3dd7
 ```
 
-webブラウザから`http://${IP}/:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する
+これでEC2インスタンスにwebサーバーが起動したはずなので、webブラウザから`http://${IP}/:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する。
+
+IPアドレスはAWSのwebコンソールから該当のEC2インスタンスの詳細情報を開くと載っている。
+
 ![web server](web_server.png)
 
 ### 2-3-5. 後片付け
 terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
 
+AWSの無料枠を利用している方も多いだろうが、これは期限が過ぎると課金が始まるので、基本的には使った後はリソースを削除しておくことをお勧めする。
+
 ## 3. まとめ
-- EC2を構築するために必要な各種サービスの紹介と、Terraformを使ってEC2を起動するところまでのハンズオンを行った。
+- EC2を構築するために必要な各種サービスの紹介と、Terraformを使ってEC2インスタンスを起動してwebサーバーを動かすところまでのハンズオンを行った。
 - インフラにおいて難しいのは設計であり、実装部分はTerraformなどでIaCすることによって比較的楽に構築する事ができる。
-- 今回構築したEC2では、（ハンズオン上では出来る限り隠匿しているが）起動時（ユーザーデータ）の設定やアプリケーションのデプロイなどを手動で行ってきた。
-  - これは業務ではgitなどのツールをインストールするところから始まり、非常に面倒
-    - 構成管理ツールを使えばなんとかなるはず
+- 今回ハンズオンではEC2インスタンス上での作業（ライブラリのインストールやコマンド操作など）は出来る限り隠匿したが、それでも面倒な手順を踏む必要があった
+  - 業務レベルで動かそうとすると非常に沢山のライブラリやツールを、EC2インスタンスの数の分だけインストールする必要があり、非常に面倒
+  - この辺りは構成管理ツールを使うことで簡略化することは可能

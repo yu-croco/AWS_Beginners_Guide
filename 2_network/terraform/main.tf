@@ -115,13 +115,23 @@ resource "aws_iam_instance_profile" "infra-study" {
 resource "aws_iam_role_policy" "infra-study" {
   name   = "infra-study"
   role   = aws_iam_role.infra-study.id
+  # see: https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
   policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": "*",
+      "Action": [
+        "ec2:RunInstances",
+        "ec2:AssociateIamInstanceProfile",
+        "ec2:ReplaceIamInstanceProfileAssociation"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
       "Resource": "*"
     }
   ]
