@@ -251,7 +251,7 @@ $ bin/docker_run.sh
 
 IPアドレスはAWSのwebコンソールから該当のEC2インスタンスの詳細情報を開くと載っている。
 
-![web server](web_server.png)
+![web server](./img/web_server.png)
 
 ### 2-3-5. 後片付け
 terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
