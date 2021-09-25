@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = "ap-northeast-1"
+  region = "ap-northeast-1"
 
   default_tags {
     tags = {
@@ -86,8 +86,8 @@ resource "aws_security_group" "infra_study_sg" {
     to_port          = 0
   }
   ingress {
-    // set your IP
-    cidr_blocks      = [""]
+    // FIXME set your IP
+    cidr_blocks      = []
     description      = "your IP address"
     from_port        = 22
     to_port          = 80
@@ -101,24 +101,21 @@ resource "aws_security_group" "infra_study_sg" {
 
 resource "aws_iam_role" "infra_study" {
   name                  = "infra-study"
-  assume_role_policy    = <<EOF
-{
-  "Version":"2012-10-17",
-  "Statement":[
-    {
-      "Effect":"Allow",
-      "Principal":{
-        "Service":"ec2.amazonaws.com"
-      },
-      "Action":"sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  assume_role_policy    = data.aws_iam_policy_document.ecs_assume_role_policy_doc.json
   description           = "infra-study role"
   force_detach_policies = false
   tags = {
     Name = "infra-study"
+  }
+}
+
+data "aws_iam_policy_document" "ecs_assume_role_policy_doc" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
 
@@ -128,30 +125,22 @@ resource "aws_iam_instance_profile" "infra_study" {
 }
 
 resource "aws_iam_role_policy" "infra_study" {
-  name   = "infra-study"
-  role   = aws_iam_role.infra_study.id
+  name = "infra-study"
+  role = aws_iam_role.infra_study.id
   # see: https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:RunInstances",
-        "ec2:AssociateIamInstanceProfile",
-        "ec2:ReplaceIamInstanceProfileAssociation"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "iam:PassRole",
-      "Resource": "*"
-    }
-  ]
+  policy = data.aws_iam_policy_document.ec2_additional_policy_doc.json
 }
-EOF
+
+data "aws_iam_policy_document" "ec2_additional_policy_doc" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:RunInstances",
+      "ec2:AssociateIamInstanceProfile",
+      "ec2:ReplaceIamInstanceProfileAssociation",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_instance" "infra_study" {

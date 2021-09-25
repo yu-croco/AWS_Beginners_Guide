@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = "ap-northeast-1"
+  region = "ap-northeast-1"
   default_tags {
     tags = {
       Env                = "dev"
@@ -110,8 +110,9 @@ resource "aws_security_group" "infra_study_sg" {
     to_port          = 0
   }
   ingress {
-    cidr_blocks      = ["0.0.0.0/0"]
-    description      = ""
+    // FIXME set your IP
+    cidr_blocks      = []
+    description      = "your IP address"
     from_port        = 80
     to_port          = 80
     ipv6_cidr_blocks = []
@@ -121,23 +122,9 @@ resource "aws_security_group" "infra_study_sg" {
     self             = false
   }
   ingress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-    description      = ""
-    from_port        = 443
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = []
-    self             = false
-    to_port          = 443
-  }
-  ingress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-    description      = ""
+    // FIXME set your IP
+    cidr_blocks      = []
+    description      = "your IP address"
     from_port        = 8080
     ipv6_cidr_blocks = []
     prefix_list_ids  = []
@@ -148,13 +135,45 @@ resource "aws_security_group" "infra_study_sg" {
   }
 }
 
+// 簡略化のためecs execution role / ecs task roleの共通のroleを用意している
 resource "aws_iam_role" "infra_study" {
   name                  = "infra-study"
-  assume_role_policy    = file("./config/iam/infra-study.json")
+  assume_role_policy    = data.aws_iam_policy_document.ecs_assume_role_policy_doc.json
   description           = "infra-study"
   force_detach_policies = false
   tags = {
     Name = "infra-study"
+  }
+}
+
+data "aws_iam_policy_document" "ecs_assume_role_policy_doc" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs.amazonaws.com"]
+    }
+  }
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["application-autoscaling.amazonaws.com"]
+    }
+  }
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
 
@@ -163,85 +182,74 @@ resource "aws_iam_instance_profile" "infra_study" {
   role = aws_iam_role.infra_study.name
 }
 
-resource "aws_iam_role_policy" "infra_study" {
-  name   = "infra-study"
-  role   = aws_iam_role.infra_study.id
-  // see: https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/task_execution_IAM_role.html
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:Describe*",
-        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-        "elasticloadbalancing:DeregisterTargets",
-        "elasticloadbalancing:Describe*",
-        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-        "elasticloadbalancing:RegisterTargets"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:DescribeTags",
-        "ecs:CreateCluster",
-        "ecs:DeregisterContainerInstance",
-        "ecs:DiscoverPollEndpoint",
-        "ecs:Poll",
-        "ecs:RegisterContainerInstance",
-        "ecs:StartTelemetrySession",
-        "ecs:UpdateContainerInstancesState",
-        "ecs:Submit*",
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "ecs:DescribeServices",
-        "ecs:CreateTaskSet",
-        "ecs:UpdateServicePrimaryTaskSet",
-        "ecs:DeleteTaskSet",
-        "elasticloadbalancing:DescribeTargetGroups",
-        "elasticloadbalancing:DescribeListeners",
-        "elasticloadbalancing:ModifyListener",
-        "elasticloadbalancing:DescribeRules",
-        "elasticloadbalancing:ModifyRule",
-        "lambda:InvokeFunction",
-        "cloudwatch:DescribeAlarms",
-        "sns:Publish",
-        "s3:GetObject",
-        "s3:GetObjectVersion"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "iam:PassRole"
-      ],
-      "Effect": "Allow",
-      "Resource": "*",
-      "Condition": {
-        "StringLike": {
-          "iam:PassedToService": [
-            "ecs-tasks.amazonaws.com"
-          ]
-        }
-      }
-    }
-  ]
+resource "aws_iam_role_policy_attachment" "infra_study" {
+  role       = aws_iam_role.infra_study.id
+  policy_arn = aws_iam_policy.infra_study_ecs_additional.arn
 }
-EOF
+
+resource "aws_iam_policy" "infra_study_ecs_additional" {
+  name        = "infra-study-ecs-additional-policy"
+  policy = data.aws_iam_policy_document.ecs_additional_role_policy_doc.json
+}
+
+// see: https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/task_execution_IAM_role.html
+data "aws_iam_policy_document" "ecs_additional_role_policy_doc" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:Describe*",
+      "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+      "elasticloadbalancing:DeregisterTargets",
+      "elasticloadbalancing:Describe*",
+      "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+      "elasticloadbalancing:RegisterTargets"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeTags",
+      "ecs:CreateCluster",
+      "ecs:DeregisterContainerInstance",
+      "ecs:DiscoverPollEndpoint",
+      "ecs:Poll",
+      "ecs:RegisterContainerInstance",
+      "ecs:StartTelemetrySession",
+      "ecs:UpdateContainerInstancesState",
+      "ecs:Submit*",
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:CreateTaskSet",
+      "ecs:UpdateServicePrimaryTaskSet",
+      "ecs:DeleteTaskSet",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:ModifyListener",
+      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:ModifyRule",
+      "lambda:InvokeFunction",
+      "cloudwatch:DescribeAlarms",
+      "sns:Publish",
+      "s3:GetObject",
+      "s3:GetObjectVersion"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_alb" "infra_study" {
@@ -372,9 +380,9 @@ resource "aws_ecs_cluster" "infra_study" {
 
 resource "aws_ecs_task_definition" "infra_study" {
   family                   = "infra-study"
-  container_definitions    = file("./config/ecs/infra-study.json")
-  cpu                      = 1024
-  memory                   = 2048
+  container_definitions    = jsonencode(local.infra_study_1_task_definition)
+  cpu                      = 512
+  memory                   = 1024
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.infra_study.arn
@@ -393,7 +401,7 @@ resource "aws_ecs_service" "infra_study" {
   platform_version                  = "1.4.0"
   launch_type                       = "FARGATE"
   network_configuration {
-    assign_public_ip = true
+    assign_public_ip = false
     security_groups  = [aws_security_group.infra_study_sg.id]
     subnets          = [aws_subnet.infra_study_public_subnet.id]
   }
@@ -409,9 +417,9 @@ resource "aws_ecs_service" "infra_study" {
 
 resource "aws_ecs_task_definition" "infra_study_2" {
   family                   = "infra-study-2"
-  container_definitions    = file("./config/ecs/infra-study-2.json")
-  cpu                      = 1024
-  memory                   = 2048
+  container_definitions    = jsonencode(local.infra_study_2_task_definition)
+  cpu                      = 512
+  memory                   = 1024
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.infra_study.arn
