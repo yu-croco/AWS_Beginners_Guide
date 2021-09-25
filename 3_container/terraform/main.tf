@@ -6,7 +6,7 @@ terraform {
   required_version = "= 0.13.4"
 }
 
-resource "aws_vpc" "infra-study-vpc" {
+resource "aws_vpc" "infra_study_vpc" {
   cidr_block                     = "10.0.0.0/16"
   enable_classiclink             = false
   enable_classiclink_dns_support = false
@@ -18,26 +18,26 @@ resource "aws_vpc" "infra-study-vpc" {
   }
 }
 
-resource "aws_internet_gateway" "infra-study-igw" {
-  vpc_id = aws_vpc.infra-study-vpc.id
+resource "aws_internet_gateway" "infra_study_igw" {
+  vpc_id = aws_vpc.infra_study_vpc.id
   tags = {
     Name = "infra-study-igw"
   }
 }
 
-resource "aws_route_table" "infra-study-public-rtb" {
-  vpc_id = aws_vpc.infra-study-vpc.id
+resource "aws_route_table" "infra_study_public_rtb" {
+  vpc_id = aws_vpc.infra_study_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.infra-study-igw.id
+    gateway_id = aws_internet_gateway.infra_study_igw.id
   }
   tags = {
     Name = "infra-study-public-rtb"
   }
 }
 
-resource "aws_subnet" "infra-study-public-subnet" {
-  vpc_id            = aws_vpc.infra-study-vpc.id
+resource "aws_subnet" "infra_study_public_subnet" {
+  vpc_id            = aws_vpc.infra_study_vpc.id
   availability_zone = "ap-northeast-1c"
   cidr_block        = "10.0.3.0/24"
   tags = {
@@ -45,24 +45,24 @@ resource "aws_subnet" "infra-study-public-subnet" {
   }
 }
 
-resource "aws_route_table_association" "infra-study-rtb-to-public-subnet" {
-  subnet_id      = aws_subnet.infra-study-public-subnet.id
-  route_table_id = aws_route_table.infra-study-public-rtb.id
+resource "aws_route_table_association" "infra_study_rtb_to_public_subnet" {
+  subnet_id      = aws_subnet.infra_study_public_subnet.id
+  route_table_id = aws_route_table.infra_study_public_rtb.id
 }
 
-resource "aws_route_table" "infra-study-public-rtb-2" {
-  vpc_id = aws_vpc.infra-study-vpc.id
+resource "aws_route_table" "infra_study_public_rtb_2" {
+  vpc_id = aws_vpc.infra_study_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.infra-study-igw.id
+    gateway_id = aws_internet_gateway.infra_study_igw.id
   }
   tags = {
     Name = "infra-study-public-rtb-2"
   }
 }
 
-resource "aws_subnet" "infra-study-public-subnet-2" {
-  vpc_id            = aws_vpc.infra-study-vpc.id
+resource "aws_subnet" "infra_study_public_subnet_2" {
+  vpc_id            = aws_vpc.infra_study_vpc.id
   availability_zone = "ap-northeast-1a"
   cidr_block        = "10.0.5.0/24"
   tags = {
@@ -70,17 +70,17 @@ resource "aws_subnet" "infra-study-public-subnet-2" {
   }
 }
 
-resource "aws_route_table_association" "infra-study-rtb-to-public-subnet-2" {
-  subnet_id      = aws_subnet.infra-study-public-subnet-2.id
-  route_table_id = aws_route_table.infra-study-public-rtb-2.id
+resource "aws_route_table_association" "infra_study_rtb_to_public_subnet_2" {
+  subnet_id      = aws_subnet.infra_study_public_subnet_2.id
+  route_table_id = aws_route_table.infra_study_public_rtb_2.id
 }
 
 # Security Group is devided by VPC
 # anti-pattern to use default Security Group...!
-resource "aws_security_group" "infra-study-sg" {
+resource "aws_security_group" "infra_study_sg" {
   name        = "infra-study-sg"
   description = "for infra study"
-  vpc_id      = aws_vpc.infra-study-vpc.id
+  vpc_id      = aws_vpc.infra_study_vpc.id
   tags = {
     Name = "infra-study-sg"
   }
@@ -134,7 +134,7 @@ resource "aws_security_group" "infra-study-sg" {
   }
 }
 
-resource "aws_iam_role" "infra-study" {
+resource "aws_iam_role" "infra_study" {
   name                  = "infra-study"
   assume_role_policy    = file("./config/iam/infra-study.json")
   description           = "infra-study"
@@ -144,14 +144,14 @@ resource "aws_iam_role" "infra-study" {
   }
 }
 
-resource "aws_iam_instance_profile" "infra-study" {
+resource "aws_iam_instance_profile" "infra_study" {
   name = "infra-study"
-  role = aws_iam_role.infra-study.name
+  role = aws_iam_role.infra_study.name
 }
 
-resource "aws_iam_role_policy" "infra-study" {
+resource "aws_iam_role_policy" "infra_study" {
   name   = "infra-study"
-  role   = aws_iam_role.infra-study.id
+  role   = aws_iam_role.infra_study.id
   // see: https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/task_execution_IAM_role.html
   policy = <<EOF
 {
@@ -230,13 +230,13 @@ resource "aws_iam_role_policy" "infra-study" {
 EOF
 }
 
-resource "aws_alb" "infra-study" {
+resource "aws_alb" "infra_study" {
   name                       = "infra-study"
   load_balancer_type         = "application"
   ip_address_type            = "ipv4"
   internal                   = false
-  security_groups            = [aws_security_group.infra-study-sg.id]
-  subnets                    = [aws_subnet.infra-study-public-subnet.id, aws_subnet.infra-study-public-subnet-2.id]
+  security_groups            = [aws_security_group.infra_study_sg.id]
+  subnets                    = [aws_subnet.infra_study_public_subnet.id, aws_subnet.infra_study_public_subnet_2.id]
   enable_deletion_protection = false
   access_logs {
     bucket  = ""
@@ -248,11 +248,11 @@ resource "aws_alb" "infra-study" {
   }
 }
 
-resource "aws_alb_target_group" "infra-study" {
+resource "aws_alb_target_group" "infra_study" {
   name        = "infra-study-tg"
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.infra-study-vpc.id
+  vpc_id      = aws_vpc.infra_study_vpc.id
   port        = 80
   health_check {
     enabled             = true
@@ -270,22 +270,22 @@ resource "aws_alb_target_group" "infra-study" {
   }
 }
 
-resource "aws_alb_listener" "infra-study" {
-  load_balancer_arn = aws_alb.infra-study.arn
+resource "aws_alb_listener" "infra_study" {
+  load_balancer_arn = aws_alb.infra_study.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.infra-study.arn
+    target_group_arn = aws_alb_target_group.infra_study.arn
     type             = "forward"
   }
 }
 
-resource "aws_alb_target_group" "infra-study-2" {
+resource "aws_alb_target_group" "infra_study_2" {
   name        = "infra-study-tg-2"
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.infra-study-vpc.id
+  vpc_id      = aws_vpc.infra_study_vpc.id
   port        = 8080
   health_check {
     enabled             = true
@@ -303,33 +303,33 @@ resource "aws_alb_target_group" "infra-study-2" {
   }
 }
 
-resource "aws_alb_listener" "infra-study-2" {
-  load_balancer_arn = aws_alb.infra-study.arn
+resource "aws_alb_listener" "infra_study_2" {
+  load_balancer_arn = aws_alb.infra_study.arn
   port              = "8080"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.infra-study-2.arn
+    target_group_arn = aws_alb_target_group.infra_study_2.arn
     type             = "forward"
   }
 }
 
 # for node.js application
-resource "aws_cloudwatch_log_group" "infra-study" {
+resource "aws_cloudwatch_log_group" "infra_study" {
   name = "/ecs/infra-study"
   tags = {
     Name = "infra-study"
   }
 }
 
-resource "aws_cloudwatch_log_group" "infra-study-2" {
+resource "aws_cloudwatch_log_group" "infra_study_2" {
   name = "/ecs/infra-study-2"
   tags = {
     Name = "infra-study"
   }
 }
 
-resource "aws_ecr_repository" "infra-study" {
+resource "aws_ecr_repository" "infra_study" {
   name                 = "infra-study"
   image_tag_mutability = "MUTABLE"
   tags = {
@@ -337,7 +337,7 @@ resource "aws_ecr_repository" "infra-study" {
   }
 }
 
-resource "aws_ecr_repository" "infra-study-2" {
+resource "aws_ecr_repository" "infra_study_2" {
   name                 = "infra-study-2"
   image_tag_mutability = "MUTABLE"
   tags = {
@@ -345,7 +345,7 @@ resource "aws_ecr_repository" "infra-study-2" {
   }
 }
 
-resource "aws_ecs_cluster" "infra-study" {
+resource "aws_ecs_cluster" "infra_study" {
   name = "infra-study-cluster"
   setting {
     name  = "containerInsights"
@@ -356,74 +356,74 @@ resource "aws_ecs_cluster" "infra-study" {
   }
 }
 
-resource "aws_ecs_task_definition" "infra-study" {
+resource "aws_ecs_task_definition" "infra_study" {
   family                   = "infra-study"
   container_definitions    = file("./config/ecs/infra-study.json")
   cpu                      = 1024
   memory                   = 2048
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  task_role_arn            = aws_iam_role.infra-study.arn
-  execution_role_arn       = aws_iam_role.infra-study.arn
+  task_role_arn            = aws_iam_role.infra_study.arn
+  execution_role_arn       = aws_iam_role.infra_study.arn
   tags = {
     Name = "infra-study"
   }
 }
 
-resource "aws_ecs_service" "infra-study" {
+resource "aws_ecs_service" "infra_study" {
   name                              = "infra-study"
-  cluster                           = aws_ecs_cluster.infra-study.id
-  task_definition                   = aws_ecs_task_definition.infra-study.arn
+  cluster                           = aws_ecs_cluster.infra_study.id
+  task_definition                   = aws_ecs_task_definition.infra_study.arn
   desired_count                     = 1
   health_check_grace_period_seconds = 120
   platform_version                  = "1.4.0"
   launch_type                       = "FARGATE"
   network_configuration {
     assign_public_ip = true
-    security_groups  = [aws_security_group.infra-study-sg.id]
-    subnets          = [aws_subnet.infra-study-public-subnet.id]
+    security_groups  = [aws_security_group.infra_study_sg.id]
+    subnets          = [aws_subnet.infra_study_public_subnet.id]
   }
   load_balancer {
     container_name   = "infra-study"
     container_port   = 80
-    target_group_arn = aws_alb_target_group.infra-study.arn
+    target_group_arn = aws_alb_target_group.infra_study.arn
   }
   deployment_controller {
     type = "ECS"
   }
 }
 
-resource "aws_ecs_task_definition" "infra-study-2" {
+resource "aws_ecs_task_definition" "infra_study_2" {
   family                   = "infra-study-2"
   container_definitions    = file("./config/ecs/infra-study-2.json")
   cpu                      = 1024
   memory                   = 2048
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  task_role_arn            = aws_iam_role.infra-study.arn
-  execution_role_arn       = aws_iam_role.infra-study.arn
+  task_role_arn            = aws_iam_role.infra_study.arn
+  execution_role_arn       = aws_iam_role.infra_study.arn
   tags = {
     Name = "infra-study"
   }
 }
 
-resource "aws_ecs_service" "infra-study-2" {
+resource "aws_ecs_service" "infra_study_2" {
   name                              = "infra-study-2"
-  cluster                           = aws_ecs_cluster.infra-study.id
-  task_definition                   = aws_ecs_task_definition.infra-study-2.arn
+  cluster                           = aws_ecs_cluster.infra_study.id
+  task_definition                   = aws_ecs_task_definition.infra_study_2.arn
   desired_count                     = 1
   health_check_grace_period_seconds = 120
   platform_version                  = "1.4.0"
   launch_type                       = "FARGATE"
   network_configuration {
     assign_public_ip = true
-    security_groups  = [aws_security_group.infra-study-sg.id]
-    subnets          = [aws_subnet.infra-study-public-subnet-2.id]
+    security_groups  = [aws_security_group.infra_study_sg.id]
+    subnets          = [aws_subnet.infra_study_public_subnet_2.id]
   }
   load_balancer {
     container_name   = "infra-study-2"
     container_port   = 8080
-    target_group_arn = aws_alb_target_group.infra-study-2.arn
+    target_group_arn = aws_alb_target_group.infra_study_2.arn
   }
   deployment_controller {
     type = "ECS"

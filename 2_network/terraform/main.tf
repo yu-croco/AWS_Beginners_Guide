@@ -6,7 +6,7 @@ terraform {
   required_version = "= 0.13.4"
 }
 
-resource "aws_vpc" "infra-study-vpc" {
+resource "aws_vpc" "infra_study_vpc" {
   cidr_block                     = "10.0.0.0/16"
   enable_classiclink             = false
   enable_classiclink_dns_support = false
@@ -18,26 +18,26 @@ resource "aws_vpc" "infra-study-vpc" {
   }
 }
 
-resource "aws_internet_gateway" "infra-study-igw" {
-  vpc_id = aws_vpc.infra-study-vpc.id
+resource "aws_internet_gateway" "infra_study_igw" {
+  vpc_id = aws_vpc.infra_study_vpc.id
   tags = {
     Name = "infra-study-igw"
   }
 }
 
-resource "aws_route_table" "infra-study-public-rtb" {
-  vpc_id = aws_vpc.infra-study-vpc.id
+resource "aws_route_table" "infra_study_public_rtb" {
+  vpc_id = aws_vpc.infra_study_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.infra-study-igw.id
+    gateway_id = aws_internet_gateway.infra_study_igw.id
   }
   tags = {
     Name = "infra-study-public-rtb"
   }
 }
 
-resource "aws_subnet" "infra-study-public-subnet" {
-  vpc_id            = aws_vpc.infra-study-vpc.id
+resource "aws_subnet" "infra_study_public_subnet" {
+  vpc_id            = aws_vpc.infra_study_vpc.id
   availability_zone = "ap-northeast-1c"
   cidr_block        = "10.0.3.0/24"
   tags = {
@@ -45,17 +45,17 @@ resource "aws_subnet" "infra-study-public-subnet" {
   }
 }
 
-resource "aws_route_table_association" "infra-study-rtb-to-public-subnet" {
-  subnet_id      = aws_subnet.infra-study-public-subnet.id
-  route_table_id = aws_route_table.infra-study-public-rtb.id
+resource "aws_route_table_association" "infra_study_rtb_to_public_subnet" {
+  subnet_id      = aws_subnet.infra_study_public_subnet.id
+  route_table_id = aws_route_table.infra_study_public_rtb.id
 }
 
 # Security Group is devided by VPC
 # anti-pattern to use default Security Group...!
-resource "aws_security_group" "infra-study-sg" {
+resource "aws_security_group" "infra_study_sg" {
   name        = "infra-study-sg"
   description = "for infra study"
-  vpc_id      = aws_vpc.infra-study-vpc.id
+  vpc_id      = aws_vpc.infra_study_vpc.id
   tags = {
     Name = "infra-study-sg"
   }
@@ -84,7 +84,7 @@ resource "aws_security_group" "infra-study-sg" {
   }
 }
 
-resource "aws_iam_role" "infra-study" {
+resource "aws_iam_role" "infra_study" {
   name                  = "infra-study"
   assume_role_policy    = <<EOF
 {
@@ -107,14 +107,14 @@ EOF
   }
 }
 
-resource "aws_iam_instance_profile" "infra-study" {
+resource "aws_iam_instance_profile" "infra_study" {
   name = "infra-study"
-  role = aws_iam_role.infra-study.name
+  role = aws_iam_role.infra_study.name
 }
 
-resource "aws_iam_role_policy" "infra-study" {
+resource "aws_iam_role_policy" "infra_study" {
   name   = "infra-study"
-  role   = aws_iam_role.infra-study.id
+  role   = aws_iam_role.infra_study.id
   # see: https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
   policy = <<EOF
 {
@@ -139,14 +139,14 @@ resource "aws_iam_role_policy" "infra-study" {
 EOF
 }
 
-resource "aws_instance" "infra-study" {
+resource "aws_instance" "infra_study" {
   ami           = "ami-0cc75a8978fbbc969"
   instance_type = "t2.micro"
   # create secret key and set the key name on 'key_name' below
   # see: https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html
   key_name                    = ""
-  subnet_id                   = aws_subnet.infra-study-public-subnet.id
-  vpc_security_group_ids      = [aws_security_group.infra-study-sg.id]
+  subnet_id                   = aws_subnet.infra_study_public_subnet.id
+  vpc_security_group_ids      = [aws_security_group.infra_study_sg.id]
   iam_instance_profile        = "infra-study"
   count                       = 1
   associate_public_ip_address = true
