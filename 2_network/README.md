@@ -122,34 +122,21 @@ EC2に展開した仮想環境のことをインスタンスと呼び、我々�
   - `plan`はDRY RUNであり、実行される予定の差分が表示される（実行はされない）
   - `apply`はTerraformで定義したリソースをクラウド環境に適応する
 - クラウド上のリソースを削除したい場合には `destroy`を使う
-- できるだけ安全に進めるのが良さげなので、`-target`オプションを使って実行したい対象のリソースを絞るのがおすすめ
-  - 決してベストプラクティスではないので、その辺りは調べてみてください
-- plan
-  - `terraform plan -target=${resource}` で対象のリソースの実行計画を見て差分が意図通りか確認する
-    - 例：`terraform plan -target=aws_vpc.infra-study-vpc`
-    - 複数のリソースを指定する場合には、`-target={aws_vpc.infra-study-vpc,aws_internet_gateway.infra-study-igw}` みたいにすればOK
-- apply
-  - `terraform apply -target=${resource}` で対象のリソースをAWS環境に反映させる
-    - 例：`terraform apply -target=aws_vpc.infra-study-vpc`
-    - 複数のリソースを指定する場合には、 `-target={aws_vpc.infra-study-vpc,aws_eip.genkan-eip}` みたいにすればOK
-- destroy
-  - `terraform plan -destroy -target={}`で対象のクラウド上のリソースを削除する際のDRY RUNが出来る
-  - `terraform destroy -target={}`で対象のクラウド上のリソースを削除できる
 - `xxx.tfstate` ファイルはterraformコマンドを通じてのみ変更を反映するもの（マイグレーションのスキーマみたいなやつ）
   - 絶対に手動で変更しないこと！
 
 ### 2-3-2. セットアップ
 #### terraform init
-`./terraform`配下で `./bin/setup.sh`を実行する
+`./terraform`配下で `make setup`を実行する
 
 #### EC2のキーペア作成
 EC2にsshログインする場合には予め秘密鍵を作っておく必要があるので、[Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
 
-作成したキーをローカルに設定した上で、`./terraform/main.tf`の`aws_instance.infra-study`の`key_name`にその名前を設定する。
+作成したキーをローカルに設定した上で、`./terraform/ec2.tf`の`aws_instance.infra-study`の`key_name`にその名前を設定する。
 これで、Terraformを使って起動したEC2インスタンスとキーペアが紐付けられる。
 
 #### インバウンドアクセス制限
-起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/main.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
+起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/security_group.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
 
 デフォルトでは外部からはアクセスできない仕様であるため、かならず何らかのIPを指定する必要がある。
 
@@ -158,12 +145,10 @@ EC2にsshログインする場合には予め秘密鍵を作っておく必要�
 
 ![region](./img/network_img.png)
 
-`main.tf`ファイルに有る記述を一つずつplan/applyしていく。
-この際にログに変更差分などが表示されるので見ておくと良い。
 
 ```
-$ terraform plan -target=aws_vpc.infra-study-vpc
-$ terraform apply -target=aws_vpc.infra-study-vpc
+$ terraform plan
+$ terraform apply
 ```
 
 apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する。

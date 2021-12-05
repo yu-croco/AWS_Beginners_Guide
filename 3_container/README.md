@@ -109,10 +109,10 @@ ELBにアクセスが来た際、Portが80番であればあればnode.jsのア�
 ![network](./img/network.png)
 
 ### 3-4-2. セットアップ
-`./terraform`配下で `./bin/setup.sh`を実行する
+`./terraform`配下で `make setup`を実行する
 
 ### 3-4-3. リソースを構築
-`terraform/`配下でリソース毎にapplyを実行していく。ひとまず294行目辺りまで実行していく。
+`./terraform` 配下で `terraform apply` を実行する
 
 ECRに`infra-study`と`infra-study-2`という2つのレポジトリが構築されるので、
 
@@ -123,11 +123,9 @@ ECRに`infra-study`と`infra-study-2`という2つのレポジトリが構築さ
 
 具体的な手順は[イメージのプッシュ](https://docs.aws.amazon.com/ja_jp/AmazonECR/latest/userguide/docker-push-ecr-image.html)などを参照のこと。
 
-ECRにPushし終えたら、`terraform/config/ecs/`の2つのJsonファイルにそれぞれ`image`というキーが有るので、そこに`aws_ecr_repository`を構築してアプリケーションイメージをECRにPushした際に出来るエンドポイントを入れる（ファイル名とECRのレポジトリ名が対応している）。
+その後 `ecs.tf` の `aws_ecs_service` の `desired_count` を 0 -> 1に変更して再度 `terraform apply` を実行する。
 
-295行目以降のリソースもapplyしていく。
-
-全てapplyし終えたら、AWSのwebコンソールからELB(EC2→Load Balancers)を開き、該当のELBのDNS nameを確認する。
+AWSのwebコンソールからELB(EC2→Load Balancers)を開き、該当のELBのDNS nameを確認する。
 
 DNS nameでPort80番にアクセスして`Hello World from node.js`と返されることを確認する
 
@@ -138,7 +136,7 @@ DNS nameでPort80番にアクセスして`Hello World from Golang`と返され�
 例：infra-study-0000000.ap-northeast-1.elb.amazonaws.com:8080
 
 ### 3-4-4. 後片付け
-terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
+`terraform destroy` コマンドを実行することでリソースを削除する。
 
 ## 3-5. まとめ
 - Dockerコンテナ技術の簡単な枠組みとメリットを学んだ
