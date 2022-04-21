@@ -1,5 +1,5 @@
 # see: https://nodejs.org/ja/docs/guides/nodejs-docker-webapp/
-FROM node:12
+FROM node:18
 
 ENV APP_ROOT=/usr/src/app
 
