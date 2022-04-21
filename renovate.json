@@ -1,5 +1,6 @@
 {
   "enabled": true,
-  "prHeader": "- [ ] 関連するTerraformリソースがある場合にはそちらも修正している",
-  "prFooter": "これはprFooter"
+  "prHeader": "- [ ] これはprHeader",
+  "prBodyNotes": [ "- [ ] これはprBodyNotes" ],
+  "prFooter": "- [ ] これはprFooter"
 }
