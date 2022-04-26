@@ -14,8 +14,10 @@ AWSアカウントを持っている前提で進めていく。
 - AWS CLIの準備
 
 ```
-$ pip3 install awscli --upgrade
+$ brew install awscli
 $ aws --version
+# 以下のように出ればOK
+aws-cli/2.1.30 Python/3.9.2 Darwin/20.3.0 source/x86_64 prompt/off
 ```
 
 - 環境変数を設定する
@@ -30,7 +32,7 @@ $ export AWS_DEFAULT_REGION=ap-northeast-1
 
 ```
 $ aws sts get-caller-identity --query Account --output text
-# --> 3550990xxxxxxxx (AWSアカウントIDが出力されればOK)
+# --> xxxxxxxxxxxxxxxx (AWSアカウントIDが出力されればOK)
 ```
 
 - Terraformをインストールする
@@ -39,7 +41,7 @@ $ aws sts get-caller-identity --query Account --output text
 ```
 $ brew install tfenv
 $ tfenv
-tfenv 2.0.0
+tfenv 2.2.3
 Usage: tfenv <command> [<options>]
 
 Commands:
@@ -48,6 +50,9 @@ Commands:
    uninstall     Uninstall a specific version of Terraform
    list          List all installed versions
    list-remote   List all installable versions
+   version-name  Print current version
+   init          Update environment to use tfenv correctly.
+   pin           Write the current active version to ./.terraform-version
 ```
 
 tfenvがインストールできたらひとまず完了

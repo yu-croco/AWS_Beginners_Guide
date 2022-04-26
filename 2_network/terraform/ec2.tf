@@ -1,5 +1,5 @@
 resource "aws_instance" "infra_study" {
-  ami           = "ami-0cc75a8978fbbc969"
+  ami           = "ami-0cc75a8978fbbc969" # Amazon Linux 2
   instance_type = "t2.micro"
   # create secret key and set the key name on 'key_name' below
   # see: https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html
@@ -9,7 +9,7 @@ resource "aws_instance" "infra_study" {
   iam_instance_profile        = "infra-study"
   count                       = 1
   associate_public_ip_address = true
-  user_data                   = file("../src/bin/user_data.sh")
+  user_data                   = file("./user_data.sh")
   tags = {
     Name = "infra-study"
   }

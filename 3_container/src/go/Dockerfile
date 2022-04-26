@@ -1,4 +1,4 @@
-FROM golang:1.14.7
+FROM golang:1.18.1
 
 ADD . /go/src/
 
