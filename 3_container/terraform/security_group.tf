@@ -19,8 +19,7 @@ resource "aws_security_group" "infra_study_sg" {
     to_port          = 0
   }
   ingress {
-    // FIXME set your IP
-    cidr_blocks      = []
+    cidr_blocks      = [local.your_home_cidr]
     description      = "your IP address"
     from_port        = 80
     to_port          = 80
@@ -31,8 +30,7 @@ resource "aws_security_group" "infra_study_sg" {
     self             = false
   }
   ingress {
-    // FIXME set your IP
-    cidr_blocks      = []
+    cidr_blocks      = [local.your_home_cidr]
     description      = "your IP address"
     from_port        = 8080
     ipv6_cidr_blocks = []

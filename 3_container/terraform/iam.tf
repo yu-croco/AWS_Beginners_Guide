@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "infra_study" {
 }
 
 resource "aws_iam_policy" "infra_study_ecs_additional" {
-  name        = "infra-study-ecs-additional-policy"
+  name   = "infra-study-ecs-additional-policy"
   policy = data.aws_iam_policy_document.ecs_additional_role_policy_doc.json
 }
 

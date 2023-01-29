@@ -29,14 +29,14 @@ locals {
 
   infra_study_1_task_definition = [
     {
-      cpu         = 1024
+      cpu         = 512
       environment = []
       essential   = true
       image       = "${aws_ecr_repository.infra_study_2.repository_url}:latest"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/infra-study"
+          "awslogs-group"         = aws_cloudwatch_log_group.infra_study.name
           "awslogs-region"        = "ap-northeast-1"
           "awslogs-stream-prefix" = "ecs"
         }
