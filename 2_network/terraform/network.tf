@@ -1,11 +1,8 @@
-
 resource "aws_vpc" "infra_study_vpc" {
-  cidr_block                     = "10.0.0.0/16"
-  enable_classiclink             = false
-  enable_classiclink_dns_support = false
-  enable_dns_hostnames           = true
-  instance_tenancy               = "default"
-  enable_dns_support             = "true"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  instance_tenancy     = "default"
+  enable_dns_support   = "true"
   tags = {
     Name = "infra-study-vpc"
   }

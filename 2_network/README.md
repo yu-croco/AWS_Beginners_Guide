@@ -131,12 +131,11 @@ EC2に展開した仮想環境のことをインスタンスと呼び、我々�
 
 #### EC2のキーペア作成
 EC2にsshログインする場合には予め秘密鍵を作っておく必要があるので、[Amazon EC2 キーペアと Linux インスタンス](https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html)を参考にしてキーペアを作成しておくこと。
-
-作成したキーをローカルに設定した上で、`./terraform/ec2.tf`の`aws_instance.infra-study`の`key_name`にその名前を設定する。
-これで、Terraformを使って起動したEC2インスタンスとキーペアが紐付けられる。
+作成する際のKey名は `infra-study` とする。
+※後続手順でterraform applyする際にCLI上から入力を求められる。
 
 #### インバウンドアクセス制限
-起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定し、`./terraform/security_group.tf`の`aws_security_group.infra-study-sg`の`ingress.cidr_blocks`にIPを指定する。
+起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定する（terraform applyの際にCLI上で入力する）。
 
 デフォルトでは外部からはアクセスできない仕様であるため、かならず何らかのIPを指定する必要がある。
 
@@ -153,22 +152,41 @@ $ terraform apply
 
 apply後にAWSコンソールを見て、applyしたリソースが追加されていることを確認する。
 
-sshでEC2にログイン出来ることを確認する（sshログイン時のホスト名は`ec2_user`）。
-ssh configの設定はこちらを参照すると良いかもしれない[~/.ssh/configについて](https://qiita.com/passol78/items/2ad123e39efeb1a5286b)。
+```shell
+$ ec2_name=infra-study
+$ instance_id=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=$ec2_name" \
+  | jq -r ".Reservations[0].Instances[0].InstanceId")
 
-雰囲気としては以下の感じ
-
-```
-Host infra-study
-  User ec2-user
-  IdentityFile ~/.ssh/xxxxxx.pem
-  HostName xx.xxx.xxx.xx
+# EC2に繋ぐ
+$ aws ssm start-session --target $instance_id
 ```
 
-ターミナルから以下のようにコマンドを打ってEC2インスタンスにログイン出来ることを確認する。
+SSM Session ManagerでEC2にsshログイン出来るようにするため、`~/.ssh/config` に以下の定義を記載する。
+※詳細については[ステップ 8: (オプション) Session Manager を通して SSH 接続のアクセス許可を有効にして制御する](https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/session-manager-getting-started-enable-ssh-connections.html)を参照のこと。
 
+```config
+host i-* mi-*
+    ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
 ```
-$ ssh infra-study
+
+以下を実行することでEC2にアクセスできることを確認する。
+
+```shell
+$ ec2_name=infra-study
+$ instance_id=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=$ec2_name" "Name=instance-state-name,Values=running" \
+  | jq -r ".Reservations[0].Instances[0].InstanceId")
+
+$ ssh -i ~/path/to/infra-study.pem ec2-user@"$instance_id"
+Last login: Sun Jan 29 11:55:11 2023 from localhost
+
+       __|  __|_  )
+       _|  (     /   Amazon Linux 2 AMI
+      ___|\___|___|
+
+https://aws.amazon.com/amazon-linux-2/
+[ec2-user@ip-0-1-2-345 ~]$
 ```
 
 ### 2-3-4. EC2上にwebサーバーを起動
@@ -184,7 +202,13 @@ terraformでEC2インスタンスを構築した際にDocker用のセットア�
 git環境を構築するのは手間なので今回はscpコマンドを使用する。`2_network`配下で以下のコマンドを使ってEC2にリソースを転送する。
 
 ```
-$ scp -r ./src infra-study:/home/ec2-user
+$ scp -i ~/path/to/infra-study.pem -r ./src ec2-user@"$instance_id":/home/ec2-user
+build_image.sh                                                                                                                                                                  100%   51     1.4KB/s   00:00
+docker_run.sh                                                                                                                                                                   100%   58     1.0KB/s   00:00
+Dockerfile                                                                                                                                                                      100%  211     6.0KB/s   00:00
+index.js                                                                                                                                                                        100%  255     6.2KB/s   00:00
+.dockerignore                                                                                                                                                                   100%   27     0.7KB/s   00:00
+package.json                                                                                                                                                                    100%  265     7.4KB/s   00:00
 ```
 
 EC2インスタンスにsshログインすると、直下に`src`ディレクトリが出来上がっているはずである。
@@ -192,7 +216,7 @@ EC2インスタンスにsshログインすると、直下に`src`ディレクト
 `src`配下で`bin/build_image.sh`を実行してDockerイメージのビルドと実行を行ってみる。
 
 ```
-$ ssh infra-study
+$ ssh -i ~/path/to/infra-study.pem ec2-user@"$instance_id"
 $ ls
 src
 $ cd src/
@@ -232,14 +256,15 @@ $ bin/docker_run.sh
 82ee4aa79014140c7fddafc28760bd74c32a9f3c57ca988287b41bce044cb3dd7
 ```
 
-これでEC2インスタンスにwebサーバーが起動したはずなので、webブラウザから`http://${IP}/:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する。
+これでEC2インスタンスにwebサーバーが起動したはずなので、webブラウザから`http://${IP}:80`にアクセスしてブラウザに`Hello World`と表示されることを確認する。
 
 IPアドレスはAWSのwebコンソールから該当のEC2インスタンスの詳細情報を開くと載っている。
 
 ![web server](./img/web_server.png)
 
 ### 2-3-5. 後片付け
-terraform destoryを使ってリソースを削除する。基本的には`terraform/main.tf`を下から消していけばOK
+`terraform destroy` コマンドを実行してリソースを削除する。
+手動で作成したEC2向けのKeyは別途手動で削除する必要がある。
 
 AWSの無料枠を利用している方も多いだろうが、これは期限が過ぎると課金が始まるので、基本的には使った後はリソースを削除しておくことをお勧めする。
 

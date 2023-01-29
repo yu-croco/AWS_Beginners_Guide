@@ -35,6 +35,10 @@ $ aws sts get-caller-identity --query Account --output text
 # --> xxxxxxxxxxxxxxxx (AWSアカウントIDが出力されればOK)
 ```
 
+- Session Manager plugin for the AWS CLIをインストールする
+  - ハンズオンにおいてEC2に対してSSHする際に利用する
+  - 手順: [(Optional) Install the Session Manager plugin for the AWS CLI](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+
 - Terraformをインストールする
   - Terraformはバージョン管理がダルイのでtfenvを使う
 
