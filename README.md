@@ -20,19 +20,28 @@ $ aws --version
 aws-cli/2.1.30 Python/3.9.2 Darwin/20.3.0 source/x86_64 prompt/off
 ```
 
-- 環境変数を設定する
+- AWS CLI Configを設定する
+  - 参考
+    - [設定の基本 - AWS Command Line Interface](https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/cli-configure-quickstart.html)
+    - [AWS CLI のコンフィグファイルと環境変数とコマンドラインオプションで指定できる内容をまとめて確認してみた](https://dev.classmethod.jp/articles/aws-cli-configuration-file-env-option/)
 
 ```
-$ export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-$ export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-$ export AWS_DEFAULT_REGION=ap-northeast-1
+$ aws configure
+AWS Access Key ID [None]: xxxxxxxx
+AWS Secret Access Key [None]: xxxxxxxx
+Default region name [None]: ap-northeast-1
+Default output format [None]: json
 ```
 
 - TerraformのAWSアカウントを指定して、ローカルからAWS CLIを使えることを確認する
 
 ```
-$ aws sts get-caller-identity --query Account --output text
-# --> xxxxxxxxxxxxxxxx (AWSアカウントIDが出力されればOK)
+$ aws sts get-caller-identity --profile ${profile_name}
+{
+    "UserId": "xxxxxxxxxxxxxxxx",
+    "Account": "01234567890123",
+    "Arn": "arn:aws:sts::01234567890123:xxxxxxxxxxxxx"
+}
 ```
 
 - Session Manager plugin for the AWS CLIをインストールする
