@@ -173,7 +173,7 @@ host i-* mi-*
 以下を実行することでEC2にアクセスできることを確認する。
 
 ```shell
-$ ec2_name=infra-study
+$ ec2_name=infra-study-${owner_name}
 $ instance_id=$(aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=$ec2_name" "Name=instance-state-name,Values=running" \
   | jq -r ".Reservations[0].Instances[0].InstanceId")

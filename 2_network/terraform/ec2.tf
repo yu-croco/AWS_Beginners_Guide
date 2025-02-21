@@ -11,6 +11,6 @@ resource "aws_instance" "infra_study" {
   associate_public_ip_address = true
   user_data                   = file("./user_data.sh")
   tags = {
-    Name = "infra-study"
+    Name = "infra-study-${var.owner}"
   }
 }
