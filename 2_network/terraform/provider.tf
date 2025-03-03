@@ -20,4 +20,6 @@ terraform {
       version = "~> 5.35.0"
     }
   }
+  # terraform init時に `-backend-config=backend.hcl`を指定する想定
+  backend "s3" {}
 }

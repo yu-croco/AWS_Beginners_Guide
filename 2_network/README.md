@@ -126,9 +126,6 @@ EC2に展開した仮想環境のことをインスタンスと呼び、我々�
   - 絶対に手動で変更しないこと！
 
 ### 2-3-2. セットアップ
-#### terraform init
-`./terraform`配下で `make setup`を実行する
-
 #### インバウンドアクセス制限
 起動したEC2に対してアクセス制限を行うため、[What Is My IP Address](https://whatismyipaddress.com/)などを参考に、現在インターネットにアクセスしているIPを特定する。
 
@@ -141,6 +138,9 @@ EC2に展開した仮想環境のことをインスタンスと呼び、我々�
 
 
 ```
+$ cp backend_example.hcl backend.hcl
+# ファイル内の`bucket`や`key`を修正
+$ terraform init -backend-config=backend.hcl
 $ export TF_VAR_owner="yamada-taro" # リソースの作者を指定
 $ export TF_VAR_your_home_ip="" # 自宅のIPを指定
 $ terraform plan
@@ -181,7 +181,8 @@ $ instance_id=$(aws ec2 describe-instances \
 $ aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSession --parameters "localPortNumber=2222,portNumber=22"
 
 # 別ターミナルを開いて実行
-$ scp -P 2222 -r ./src ec2-user@127.0.0.1:/home/ec2-user/
+# id_rsaファイルはterraform applyによりterraform配下に作成される
+$ scp -i terraform/.key_pair/${TF_VAR_owner}_infra-study.id_rsa -P 2222 -r ./src ec2-user@127.0.0.1:/home/ec2-user/
 build_image.sh                                                                                                                                                                    100%   51     2.8KB/s   00:00
 docker_run.sh                                                                                                                                                                     100%   58     3.1KB/s   00:00
 Dockerfile                                                                                                                                                                        100%  211    12.6KB/s   00:00
@@ -203,33 +204,13 @@ $ aws ssm start-session --target $instance_id
 Starting session with SessionId: ....
 sh-4.2$ bash
 [ssm-user@ip-10-0-3-27 bin]$ sudo su
-[root@ip-10-0-3-27 bin]# cd /home/ec2-user/
-[root@ip-10-0-3-27 ec2-user]# ls
-src
-[root@ip-10-0-3-27 ec2-user]# cd src/
+[root@ip-10-0-3-27 bin]# cd /home/ec2-user/src/
 [root@ip-10-0-3-27 src]# chmod -R 700 ./bin/
-$ bin/build_image.sh
+[root@ip-10-0-3-78 src]# ./bin/build_image.sh
 Sending build context to Docker daemon  9.728kB
 Step 1/8 : FROM node:12
- ---> cfcf3e70099d
-Step 2/8 : ENV APP_ROOT=/usr/src/app
- ---> Using cache
- ---> f6c6360837fc
-Step 3/8 : WORKDIR ${APP_ROOT}
- ---> Using cache
- ---> 11c0411442f7
-Step 4/8 : COPY package*.json ./
- ---> Using cache
- ---> 5b63f0e83982
-Step 5/8 : RUN npm install
- ---> Using cache
- ---> fad6aa7b1693
-Step 6/8 : COPY . ${APP_ROOT}
- ---> Using cache
- ---> e74f67175e70
-Step 7/8 : EXPOSE 80
- ---> Using cache
- ---> fda9a5e17006
+....
+....
 Step 8/8 : CMD [ "node", "index.js" ]
  ---> Using cache
  ---> 92b2312480b4
@@ -240,7 +221,7 @@ Successfully tagged sample-node-app:latest
 ビルドできたら`bin/docker_run.sh`を実行してDockerコンテナを起動する
 
 ```
-$ bin/docker_run.sh
+[root@ip-10-0-3-78 src]# bin/docker_run.sh
 82ee4aa79014140c7fddafc28760bd74c32a9f3c57ca988287b41bce044cb3dd7
 ```
 
@@ -252,7 +233,6 @@ IPアドレスはAWSのwebコンソールから該当のEC2インスタンスの
 
 ### 2-3-5. 後片付け
 `terraform destroy` コマンドを実行してリソースを削除する。
-手動で作成したEC2向けのKeyは別途手動で削除する必要がある。
 
 AWSの無料枠を利用している方も多いだろうが、これは期限が過ぎると課金が始まるので、基本的には使った後はリソースを削除しておくことをお勧めする。
 
