@@ -1,5 +1,5 @@
 resource "aws_iam_role" "this" {
-  name               = "infra-study"
+  name               = "infra-study-${var.owner}"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy_for_worker_node.json
 }
 
@@ -21,6 +21,6 @@ resource "aws_iam_role_policy_attachment" "this" {
 }
 
 resource "aws_iam_instance_profile" "this" {
-  name = "infra-study"
+  name = "infra-study-${var.owner}"
   role = aws_iam_role.this.name
 }

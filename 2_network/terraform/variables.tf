@@ -3,13 +3,9 @@ variable "your_home_ip" {
   description = "勉強用のリソースであるため、アクセス元を絞るために利用している"
 }
 
-variable "your_key_name" {
+variable "owner" {
   type        = string
-  description = <<EOT
-  EC2にSSHログインするためにAWSコンソールから作成したKey名。
-  以下のサイトを参考にしてKeyの作成を行う。
-  https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/create-key-pairs.html#having-ec2-create-your-key-pair
-EOT
+  description = "tags_allで利用しており、リソースの作者を指定する。"
 }
 
 locals {

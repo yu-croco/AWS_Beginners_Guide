@@ -1,9 +1,9 @@
 resource "aws_security_group" "infra_study_sg" {
-  name        = "infra-study-sg"
-  description = "for infra study"
+  name        = "infra-study-${var.owner}"
+  description = "for infra study ${var.owner}"
   vpc_id      = aws_vpc.infra_study_vpc.id
   tags = {
-    Name = "infra-study-sg"
+    Name = "infra-study-sg-${var.owner}"
   }
   egress {
     cidr_blocks      = ["0.0.0.0/0"]
