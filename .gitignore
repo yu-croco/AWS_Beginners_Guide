@@ -5,3 +5,4 @@
 */**/.terraform.lock.hcl
 */**/backend.hcl
 */**/.key_pair
+*/**/ecspresso.yaml

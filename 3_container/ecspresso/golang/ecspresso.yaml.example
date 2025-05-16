@@ -1,0 +1,11 @@
+region: ap-northeast-1
+cluster: infra-study-cluster-${var.owner}
+service: golang-app-${var.owner}
+service_definition: ecs-service-def.json
+task_definition: ecs-task-def.json
+timeout: 10m
+
+plugins:
+  - name: tfstate
+    config:
+      url: s3://infra-study-tfstate/${var.owner}-3-container.tfstate

@@ -1,15 +1,15 @@
 # for node.js application
-resource "aws_cloudwatch_log_group" "infra_study" {
-  name = "/ecs/infra-study"
+resource "aws_cloudwatch_log_group" "nodejs_app" {
+  name = "/ecs/nodejs-app-${var.owner}"
   tags = {
-    Name = "infra-study"
+    Name = "nodejs-app-${var.owner}"
   }
 }
 
 # for golang application
-resource "aws_cloudwatch_log_group" "infra_study_2" {
-  name = "/ecs/infra-study-2"
+resource "aws_cloudwatch_log_group" "golang_app" {
+  name = "/ecs/golang-app-${var.owner}"
   tags = {
-    Name = "infra-study"
+    Name = "golang-app-${var.owner}"
   }
 }

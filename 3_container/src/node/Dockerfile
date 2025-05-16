@@ -1,5 +1,5 @@
 # see: https://nodejs.org/ja/docs/guides/nodejs-docker-webapp/
-FROM node:18.0.0
+FROM --platform=linux/amd64 node:20.11.1
 
 ENV APP_ROOT=/usr/src/app
 

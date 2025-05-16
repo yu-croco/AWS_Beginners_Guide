@@ -1,11 +1,11 @@
 # Security Group is devided by VPC
 # anti-pattern to use default Security Group...!
 resource "aws_security_group" "infra_study_sg" {
-  name        = "infra-study-sg"
+  name        = "infra-study-sg-${var.owner}"
   description = "for infra study"
   vpc_id      = aws_vpc.infra_study_vpc.id
   tags = {
-    Name = "infra-study-sg"
+    Name = "infra-study-sg-${var.owner}"
   }
   egress {
     cidr_blocks      = ["0.0.0.0/0"]
@@ -19,7 +19,7 @@ resource "aws_security_group" "infra_study_sg" {
     to_port          = 0
   }
   ingress {
-    cidr_blocks      = [local.your_home_cidr]
+    cidr_blocks      = ["0.0.0.0/0"]
     description      = "your IP address"
     from_port        = 80
     to_port          = 80
@@ -27,17 +27,17 @@ resource "aws_security_group" "infra_study_sg" {
     prefix_list_ids  = []
     protocol         = "tcp"
     security_groups  = []
-    self             = false
+    self             = true
   }
   ingress {
-    cidr_blocks      = [local.your_home_cidr]
+    cidr_blocks      = ["0.0.0.0/0"]
     description      = "your IP address"
     from_port        = 8080
     ipv6_cidr_blocks = []
     prefix_list_ids  = []
     protocol         = "tcp"
     security_groups  = []
-    self             = false
+    self             = true
     to_port          = 8080
   }
 }

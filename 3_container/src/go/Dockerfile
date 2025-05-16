@@ -1,4 +1,4 @@
-FROM golang:1.18.1
+FROM --platform=linux/amd64 golang:1.22
 
 ADD . /go/src/
 

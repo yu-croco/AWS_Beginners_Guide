@@ -100,6 +100,25 @@ ECSでアプリケーションを実行するためにはタスク定義を作�
 - [Amazon ECS タスクのスケジューリング](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/scheduling_tasks.html)
 - [AWSでDockerを扱うためのベストプラクティス](https://www.slideshare.net/AmazonWebServicesJapan/awsdocker)
 
+### 3-3-3. ecspresso
+ECSで運用するプロダクトをデプロイする際には以下のようなパターンがある。
+※筆者はCodeDeploy未経験のため、CodeDeployにつての解像度は非常に粗い。
+
+- Terraformを利用パターン
+  - Terraformリソース(`aws_ecs_task_definition` と `aws_ecs_service`)を利用する
+  - Terraformエコシステムに乗せて一気通貫でデプロイできる
+  - アプリケーション側でカスタムしたい値（コンテナの設定/image tag/環境変数など）の変更をインフラのライフサイクルに依存させてしまう
+- [ecspresso](https://github.com/kayac/ecspresso)を経由するパターン
+  - ECS ServiceやTask DefinitionをTerraformエコシステムとは別のライフサイクルで取り扱えるようになる
+  - Terraform stateを利用できるため、インフラ固有の情報参照も比較的楽にできる
+- CodeDeployを利用するパターン
+  - CodeDeployエコシステムが既に出来上がっている場合には便利
+  - ECSデプロイに必要な情報を別途管理する必要があり、データの重複管理などが大変
+- etc.
+
+その中でとりわけecspressoは手軽に導入でき、その上アプリケーション側のライフサイクルでデプロイできるため非常に使い勝手が良い。そのため、このハンズオンではecspressoを用いてECSデプロイを行う。
+
+
 ## 3-4. ハンズオン
 ### 3-4-1. 構成図
 今回のハンズオンではECS（起動タイプはFargate）を使用して以下のような構成のインフラを構築する。
@@ -109,21 +128,39 @@ ELBにアクセスが来た際、Portが80番であればあればnode.jsのア�
 ![network](./img/network.png)
 
 ### 3-4-2. セットアップ
-`./terraform`配下で `make setup`を実行する
+`./terraform`配下で以下を実施する。
 
-### 3-4-3. リソースを構築
-`./terraform` 配下で `terraform apply` を実行する
+```shell
+$ cp backend_example.hcl backend.hcl
+# ファイル内の`bucket`や`key`を修正
+$ terraform init -backend-config=backend.hcl
+$ export TF_VAR_owner="yamada-taro" # リソースの作者を指定
+$ export TF_VAR_your_home_ip="" # 自宅のIPを指定
+$ terraform plan
+$ terraform apply
+```
 
-ECRに`infra-study`と`infra-study-2`という2つのレポジトリが構築されるので、
+ECRに`nodejs-app-${var.owner}`と`golang-app-${var.owner}`という2つのレポジトリが構築されるので、
 
-- `infra-study`に`src/node/`配下のDockerfileをビルドしてPush
-- `infra-study-2`に`src/go/`配下のDockerfileをビルドしてPush
+- `nodejs-app-${var.owner}`に`src/node/`配下のDockerfileをビルドしてPush
+- `golang-app-${var.owner}`に`src/go/`配下のDockerfileをビルドしてPush
 
 する。
 
 具体的な手順は[イメージのプッシュ](https://docs.aws.amazon.com/ja_jp/AmazonECR/latest/userguide/docker-push-ecr-image.html)などを参照のこと。
+※ECSから該当のrepositoryを開き、 `View push commands` から具体的な手順を確認できる。
 
-その後 `ecs.tf` の `aws_ecs_service` の `desired_count` を 0 -> 1に変更して再度 `terraform apply` を実行する。
+`ecspresso/` 配下で以下を実施することでECS Serviceを起動する
+
+```shell
+# コピーしたファイル内の${var.owner}部分を、自身で指定したものに書き換える
+$ cp nodejs/ecspresso.yaml.example ecspresso/nodejs/ecspresso.yaml
+# コピーしたファイル内の${var.owner}部分を、自身で指定したものに書き換える
+$ cp ecspresso/golang/ecspresso.yaml.example ecspresso/golang/ecspresso.yaml
+
+$ ecspresso deploy --config ./nodejs/ecspresso.yml
+$ ecspresso deploy --config ./golang/ecspresso.yml
+```
 
 AWSのwebコンソールからELB(EC2→Load Balancers)を開き、該当のELBのDNS nameを確認する。
 

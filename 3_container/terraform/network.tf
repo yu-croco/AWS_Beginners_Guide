@@ -1,19 +1,17 @@
 resource "aws_vpc" "infra_study_vpc" {
-  cidr_block                     = "10.0.0.0/16"
-  enable_classiclink             = false
-  enable_classiclink_dns_support = false
-  enable_dns_hostnames           = true
-  instance_tenancy               = "default"
-  enable_dns_support             = "true"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  instance_tenancy     = "default"
+  enable_dns_support   = "true"
   tags = {
-    Name = "infra-study-vpc"
+    Name = "infra-study-vpc-${var.owner}"
   }
 }
 
 resource "aws_internet_gateway" "infra_study_igw" {
   vpc_id = aws_vpc.infra_study_vpc.id
   tags = {
-    Name = "infra-study-igw"
+    Name = "infra-study-igw-${var.owner}"
   }
 }
 
@@ -24,7 +22,7 @@ resource "aws_route_table" "infra_study_public_rtb" {
     gateway_id = aws_internet_gateway.infra_study_igw.id
   }
   tags = {
-    Name = "infra-study-public-rtb"
+    Name = "infra-study-public-rtb-${var.owner}"
   }
 }
 
@@ -33,7 +31,7 @@ resource "aws_subnet" "infra_study_public_subnet" {
   availability_zone = "ap-northeast-1c"
   cidr_block        = "10.0.3.0/24"
   tags = {
-    Name = "infra-study-public-subnet"
+    Name = "infra-study-public-subnet-${var.owner}"
   }
 }
 
@@ -49,7 +47,7 @@ resource "aws_route_table" "infra_study_public_rtb_2" {
     gateway_id = aws_internet_gateway.infra_study_igw.id
   }
   tags = {
-    Name = "infra-study-public-rtb-2"
+    Name = "infra-study-public-rtb-2-${var.owner}"
   }
 }
 
@@ -58,7 +56,7 @@ resource "aws_subnet" "infra_study_public_subnet_2" {
   availability_zone = "ap-northeast-1a"
   cidr_block        = "10.0.5.0/24"
   tags = {
-    Name = "infra-study-public-subnet-2"
+    Name = "infra-study-public-subnet-2-${var.owner}"
   }
 }
 
