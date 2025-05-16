@@ -18,7 +18,22 @@
       "maximumPercent": 200,
       "minimumHealthyPercent": 100
   },
-
+  "serviceConnectConfiguration": {
+    "enabled": true,
+    "namespace": "{{ tfstate `module.ecs.aws_service_discovery_private_dns_namespace.infra_study.arn` }}",
+    "services": [
+      {
+        "portName": "app",
+        "discoveryName": "nodejs-app",
+        "clientAliases": [
+          {
+            "port": 80,
+            "dnsName": "nodejs-app"
+          }
+        ]
+      }
+    ]
+  },
   "placementConstraints": [],
   "placementStrategy": [],
   "networkConfiguration": {
