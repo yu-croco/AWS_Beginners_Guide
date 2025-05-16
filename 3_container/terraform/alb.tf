@@ -1,5 +1,5 @@
 resource "aws_alb" "infra_study" {
-  name                       = "infra-study"
+  name                       = "infra-study-${var.owner}"
   load_balancer_type         = "application"
   ip_address_type            = "ipv4"
   internal                   = false
@@ -12,12 +12,12 @@ resource "aws_alb" "infra_study" {
     enabled = false
   }
   tags = {
-    Name = "infra-study"
+    Name = "infra-study-${var.owner}"
   }
 }
 
-resource "aws_alb_target_group" "infra_study" {
-  name        = "infra-study-tg"
+resource "aws_alb_target_group" "nodejs_app" {
+  name        = "nodejs-app-tg-${var.owner}"
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.infra_study_vpc.id
@@ -34,23 +34,23 @@ resource "aws_alb_target_group" "infra_study" {
     unhealthy_threshold = 2
   }
   tags = {
-    Name = "infra-study"
+    Name = "nodejs-app-${var.owner}"
   }
 }
 
-resource "aws_alb_listener" "infra_study" {
+resource "aws_alb_listener" "nodejs_app" {
   load_balancer_arn = aws_alb.infra_study.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.infra_study.arn
+    target_group_arn = aws_alb_target_group.nodejs_app.arn
     type             = "forward"
   }
 }
 
-resource "aws_alb_target_group" "infra_study_2" {
-  name        = "infra-study-tg-2"
+resource "aws_alb_target_group" "golang_app" {
+  name        = "golang-app-tg-${var.owner}"
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.infra_study_vpc.id
@@ -67,17 +67,17 @@ resource "aws_alb_target_group" "infra_study_2" {
     unhealthy_threshold = 2
   }
   tags = {
-    Name = "infra-study"
+    Name = "golang-app-${var.owner}"
   }
 }
 
-resource "aws_alb_listener" "infra_study_2" {
+resource "aws_alb_listener" "golang_app" {
   load_balancer_arn = aws_alb.infra_study.arn
   port              = "8080"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.infra_study_2.arn
+    target_group_arn = aws_alb_target_group.golang_app.arn
     type             = "forward"
   }
 }

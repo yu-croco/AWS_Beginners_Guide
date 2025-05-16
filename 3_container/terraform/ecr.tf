@@ -1,15 +1,17 @@
-resource "aws_ecr_repository" "infra_study" {
-  name                 = "infra-study"
+resource "aws_ecr_repository" "nodejs_app" {
+  name                 = "nodejs-app-${var.owner}"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
   tags = {
-    Name = "infra-study"
+    Name = "golang-app-${var.owner}"
   }
 }
 
-resource "aws_ecr_repository" "infra_study_2" {
-  name                 = "infra-study-2"
+resource "aws_ecr_repository" "golang_app" {
+  name                 = "golang-app-${var.owner}"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
   tags = {
-    Name = "infra-study"
+    Name = "golang-app-${var.owner}"
   }
 }

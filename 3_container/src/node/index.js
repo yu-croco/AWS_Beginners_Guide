@@ -11,5 +11,14 @@ app.get('/', (req, res) => {
   res.send('Hello World from node.js');
 });
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+const startServer = async () => {
+  try {
+    await app.listen(PORT, HOST);
+    console.log(`Server running on http://${HOST}:${PORT}`);
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

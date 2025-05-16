@@ -1,0 +1,41 @@
+{
+  "loadBalancers": [
+      {
+          "targetGroupArn": "{{ tfstate `aws_alb_target_group.golang_app.arn` }}",
+          "containerName": "app",
+          "containerPort": 8080
+      }
+  ],
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "platformVersion": "1.4.0",
+  "platformFamily": "Linux",
+  "deploymentConfiguration": {
+      "deploymentCircuitBreaker": {
+          "enable": false,
+          "rollback": false
+      },
+      "maximumPercent": 200,
+      "minimumHealthyPercent": 100
+  },
+
+  "placementConstraints": [],
+  "placementStrategy": [],
+  "networkConfiguration": {
+      "awsvpcConfiguration": {
+          "subnets": [
+              "{{ tfstate `aws_subnet.infra_study_public_subnet_2.id` }}"
+          ],
+          "securityGroups": [
+              "{{ tfstate `aws_security_group.infra_study_sg.id` }}"
+          ],
+          "assignPublicIp": "ENABLED"
+      }
+  },
+  "healthCheckGracePeriodSeconds": 60,
+  "schedulingStrategy": "REPLICA",
+  "deploymentController": {
+      "type": "ECS"
+  },
+  "enableExecuteCommand": true
+}

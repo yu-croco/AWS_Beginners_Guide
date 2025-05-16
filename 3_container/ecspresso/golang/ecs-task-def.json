@@ -1,0 +1,39 @@
+{
+  "family": "golang-app-{{ tfstate `data.aws_default_tags.this.tags['Owner']` }}",
+  "taskRoleArn": "{{ tfstate `aws_iam_role.infra_study.arn` }}",
+  "executionRoleArn": "{{ tfstate `aws_iam_role.infra_study.arn` }}",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "requiresCompatibilities": [
+      "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+        "name": "app",
+        "image": "{{ tfstate `aws_ecr_repository.golang_app.repository_url` }}:latest",
+        "cpu": 256,
+        "portMappings": [
+            {
+                "containerPort": 8080,
+                "hostPort": 8080,
+                "protocol": "tcp"
+            }
+        ],
+        "essential": true,
+        "environment": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "secrets": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "{{ tfstate `aws_cloudwatch_log_group.golang_app.name` }}",
+            "awslogs-region": "ap-northeast-1",
+            "awslogs-stream-prefix": "ecs"
+          }
+        }
+    }
+  ]
+}

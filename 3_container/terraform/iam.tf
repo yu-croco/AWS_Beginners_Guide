@@ -1,11 +1,12 @@
-// 簡略化のためecs execution role / ecs task roleの共通のroleを用意している
+# 簡略化のためecs execution role / ecs task roleの共通のroleを用意している
+# 両者の具体的な説明については https://www.karakaram.com/difference-between-ecs-task-role-and-task-execution-role/ などを参考にしてみてください。
 resource "aws_iam_role" "infra_study" {
-  name                  = "infra-study"
+  name                  = "infra-study-${var.owner}"
   assume_role_policy    = data.aws_iam_policy_document.ecs_assume_role_policy_doc.json
-  description           = "infra-study"
+  description           = "infra-study-${var.owner}"
   force_detach_policies = false
   tags = {
-    Name = "infra-study"
+    Name = "infra-study-${var.owner}"
   }
 }
 
@@ -41,7 +42,7 @@ data "aws_iam_policy_document" "ecs_assume_role_policy_doc" {
 }
 
 resource "aws_iam_instance_profile" "infra_study" {
-  name = "infra-study"
+  name = "infra-study-${var.owner}"
   role = aws_iam_role.infra_study.name
 }
 
@@ -51,7 +52,7 @@ resource "aws_iam_role_policy_attachment" "infra_study" {
 }
 
 resource "aws_iam_policy" "infra_study_ecs_additional" {
-  name   = "infra-study-ecs-additional-policy"
+  name   = "infra-study-ecs-additional-policy-${var.owner}"
   policy = data.aws_iam_policy_document.ecs_additional_role_policy_doc.json
 }
 
