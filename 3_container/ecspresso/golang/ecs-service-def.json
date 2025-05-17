@@ -18,7 +18,6 @@
       "maximumPercent": 200,
       "minimumHealthyPercent": 100
   },
-
   "placementConstraints": [],
   "placementStrategy": [],
   "networkConfiguration": {

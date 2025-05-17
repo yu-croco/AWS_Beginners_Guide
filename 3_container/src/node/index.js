@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 
 // golangからアクセスされる
 app.get('/hello', (req, res) => {
-  res.send('hello');
+  res.send('Hello from node.js');
 });
 
 const startServer = async () => {

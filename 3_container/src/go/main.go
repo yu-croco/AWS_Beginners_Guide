@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+<<<<<<< HEAD
+	"os"
+=======
+>>>>>>> d029aa68c6ef9ac0fae08c0935beb243daa09b3b
 )
 
 func main() {
@@ -12,10 +16,10 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/nodejs-app" {
+	if r.URL.Path == "/hello-nodejs-app" {
 		fmt.Println("Accessing nodejs-app...")
 
-		resp, err := http.Get("http://nodejs-app.local/hello")
+		resp, err := http.Get("http://" + os.Getenv("NODEJS_APP_ENDPOINT") + "/hello")
 		if err != nil {
 			http.Error(w, "Error making request to nodejs-app", http.StatusInternalServerError)
 			return
