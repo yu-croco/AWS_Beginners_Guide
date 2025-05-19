@@ -15,6 +15,7 @@ func main() {
 func handler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/hello-nodejs-app" {
 		fmt.Println("Accessing nodejs-app...")
+		fmt.Println("endpoint: " + os.Getenv("NODEJS_APP_ENDPOINT"))
 
 		resp, err := http.Get("http://" + os.Getenv("NODEJS_APP_ENDPOINT") + "/hello")
 		if err != nil {

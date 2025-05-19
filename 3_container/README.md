@@ -156,8 +156,8 @@ ECRに`nodejs-app-${var.owner}`と`golang-app-${var.owner}`という2つのレ�
 # コピーしたファイル内のvalueを、自身で指定したものに書き換える
 $ cp base.env.example base.env
 # ECSをデプロイする
-$ ecspresso deploy --config ./nodejs/ecspresso.yml --envfile=base.env
-$ ecspresso deploy --config ./golang/ecspresso.yml --envfile=base.env
+$ ecspresso deploy --config ./nodejs/ecspresso.yaml --envfile=base.env
+$ ecspresso deploy --config ./golang/ecspresso.yaml --envfile=base.env
 ```
 
 AWSのwebコンソールからELB(EC2→Load Balancers)を開き、該当のELBのDNS nameを確認する。
