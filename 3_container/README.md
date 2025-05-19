@@ -153,13 +153,11 @@ ECRに`nodejs-app-${var.owner}`と`golang-app-${var.owner}`という2つのレ�
 `ecspresso/` 配下で以下を実施することでECS Serviceを起動する
 
 ```shell
-# コピーしたファイル内の${var.owner}部分を、自身で指定したものに書き換える
-$ cp nodejs/ecspresso.yaml.example ecspresso/nodejs/ecspresso.yaml
-# コピーしたファイル内の${var.owner}部分を、自身で指定したものに書き換える
-$ cp ecspresso/golang/ecspresso.yaml.example ecspresso/golang/ecspresso.yaml
-
-$ ecspresso deploy --config ./nodejs/ecspresso.yml
-$ ecspresso deploy --config ./golang/ecspresso.yml
+# コピーしたファイル内のvalueを、自身で指定したものに書き換える
+$ cp base.env.example base.env
+# ECSをデプロイする
+$ ecspresso deploy --config ./nodejs/ecspresso.yaml --envfile=base.env
+$ ecspresso deploy --config ./golang/ecspresso.yaml --envfile=base.env
 ```
 
 AWSのwebコンソールからELB(EC2→Load Balancers)を開き、該当のELBのDNS nameを確認する。

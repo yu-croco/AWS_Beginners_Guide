@@ -57,14 +57,14 @@ resource "aws_alb_target_group" "golang_app" {
   port        = 8080
   health_check {
     enabled             = true
-    healthy_threshold   = 5
+    healthy_threshold   = 2
     interval            = 30
     matcher             = "200"
     path                = "/"
     port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
+    timeout             = 10
+    unhealthy_threshold = 4
   }
   tags = {
     Name = "golang-app-${var.owner}"

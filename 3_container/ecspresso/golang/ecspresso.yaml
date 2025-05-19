@@ -1,0 +1,12 @@
+# ecspresso.yaml内ではtfstateから値を取得してセットすることはできない
+region: ap-northeast-1
+cluster: infra-study-cluster-{{ must_env `OWNER` }}
+service: golang-app-{{ must_env `OWNER` }}
+service_definition: ecs-service-def.json
+task_definition: ecs-task-def.json
+timeout: 10m
+
+plugins:
+  - name: tfstate
+    config:
+      url: s3://infra-study-tfstate/{{ must_env `OWNER` }}-3-container.tfstate
